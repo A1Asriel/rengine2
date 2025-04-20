@@ -9,7 +9,7 @@ if(WIN32 OR MINGW)
     set(CMAKE_FIND_LIBRARY_SUFFIXES ".a")
     set(CMAKE_EXE_LINKER_FLAGS "-static")
     set(EXTRA_LIBS opengl32 glu32 gdi32)
-    set(SDL2_DIR "${CMAKE_CURRENT_LIST_DIR}/cmake")
+    set(SDL2_DIR "${CMAKE_CURRENT_LIST_DIR}/sdl2-mingw/cmake")
 endif()
 
 # Find required packages
@@ -22,7 +22,6 @@ set(SOURCES
     src/glad.c
     src/Shader.cpp
     src/Cube.cpp
-    src/MathUtils.cpp
 )
 
 # Set include directories
@@ -41,8 +40,8 @@ endif()
 
 # Link libraries statically
 target_link_libraries(spinning-cube
-    ${SDL2_LIBRARIES}
-    ${OPENGL_LIBRARIES}
+    SDL2::SDL2main
+    SDL2::SDL2-static
     ${EXTRA_LIBS}
     "-static-libgcc" "-static-libstdc++"
 )

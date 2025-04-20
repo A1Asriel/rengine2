@@ -1,0 +1,6 @@
+[
+    {
+        "name": "Windows (x86_64)",
+        "toolchainFile": "./cmake/mingw-w64-x86_64.cmake"
+    }
+]

@@ -1,14 +1,14 @@
-#include <iostream>
-#include <filesystem>
 #include <SDL2/SDL.h>
 #include <glad/glad.h>
+
+#include <filesystem>
 #include <glm/glm.hpp>
 #include <glm/gtc/matrix_transform.hpp>
 #include <glm/gtc/type_ptr.hpp>
+#include <iostream>
 
-#include "Shader.h"
 #include "Cube.h"
-#include "MathUtils.h"
+#include "Shader.h"
 
 const int SCREEN_WIDTH = 800;
 const int SCREEN_HEIGHT = 600;
@@ -75,15 +75,18 @@ int main(int argc, char* argv[]) {
         shader = Shader("shaders/vertex.glsl", "shaders/fragment.glsl");
     }
 
-    Cube cube;
+    std::vector<std::unique_ptr<Cube>> vecCube;
 
+    for (int i = 0; i < 10; i++) {
+        std::unique_ptr<Cube> cube = std::make_unique<Cube>();
+        cube->update((float)i);
+        vecCube.push_back(std::move(cube));
+    }
     bool quit = false;
     SDL_Event e;
 
     Uint32 previousTime = SDL_GetTicks();
-    float deltaTime = 0.0f;
-    float fps = 0.0f;
-    float avgFps = 0.0f;
+    double deltaTime = 0.0f;
     int frames = 0;
 
     while (!quit) {
@@ -100,24 +103,16 @@ int main(int argc, char* argv[]) {
         Uint32 currentTime = SDL_GetTicks();
         deltaTime = (currentTime - previousTime) / 1000.0f;
 
-        if (std::floor(currentTime/1000)-std::floor(previousTime/1000) >= 1) {
-            std::cout << "FPS: " << std::to_string(avgFps) << std::endl;
-            std::cout << "Frames rendered: " << std::to_string(frames) << std::endl;
-            avgFps = fps;
-            frames = 1;
+        if (currentTime / 1000 - previousTime / 1000 >= 1) {
+            std::cout << "FPS: " << std::to_string(frames) << std::endl;
+            frames = 0;
         }
-        else {
-            avgFps = MathUtils::continuousAverage(avgFps, fps, frames);
-            frames += 1;
-        }
+        frames++;
 
         previousTime = currentTime;
-        fps = 1 / deltaTime;
 
         glClearColor(0.53f, 0.39f, 0.72f, 1.0f);
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-
-        cube.update(deltaTime);
 
         glm::mat4 view = glm::mat4(1.0f);
         view = glm::translate(view, glm::vec3(0.0f, 0.0f, -3.0f));
@@ -133,9 +128,12 @@ int main(int argc, char* argv[]) {
 
         shader.setMat4("view", view);
         shader.setMat4("projection", projection);
-        shader.setMat4("model", cube.getModelMatrix());
 
-        cube.draw();
+        for (std::unique_ptr<Cube>& cube : vecCube) {
+            shader.setMat4("model", cube->getModelMatrix());
+            cube->draw();
+            cube->update(deltaTime);
+        }
 
         SDL_GL_SwapWindow(window);
     }

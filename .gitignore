@@ -44,6 +44,7 @@ compile_commands.json
 CTestTestfile.cmake
 _deps
 .cmake
+build/
 
 ### CMake Patch ###
 CMakeUserPresets.json
@@ -58,6 +59,7 @@ CMakeUserPresets.json
 !.vscode/launch.json
 !.vscode/extensions.json
 !.vscode/*.code-snippets
+!.vscode/cmake-kits.json
 
 # Local History for Visual Studio Code
 .history/
@@ -71,5 +73,10 @@ CMakeUserPresets.json
 .ionide
 
 ### Ninja ###
+build.ninja
 .ninja_deps
 .ninja_log
+
+#############
+
+sdl2-mingw/x86_64-w64-mingw32

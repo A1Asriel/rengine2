@@ -29,6 +29,25 @@ Shader::Shader(const char* vertexPath, const char* fragmentPath) {
         fragmentCode = fShaderStream.str();
     } catch(std::ifstream::failure& e) {
         std::cerr << "Couldn't read shader: " << e.what() << std::endl;
+        // Откат к стандартному шейдеру
+        vertexCode =   "#version 460 core\n"
+                       "layout (location = 0) in vec3 aPos;\n"
+                       "layout (location = 1) in vec3 aColor;\n"
+                       "out vec3 ourColor;\n"
+                       "uniform mat4 model;\n"
+                       "uniform mat4 view;\n"
+                       "uniform mat4 projection;\n"
+                       "void main() {\n"
+                       "    gl_Position = projection * view * model * vec4(aPos, 1.0);\n"
+                       "    ourColor = aColor;\n"
+                       "}\n";
+
+        fragmentCode = "#version 460 core\n"
+                       "in vec3 ourColor;\n"
+                       "out vec4 FragColor;\n"
+                       "void main() {\n"
+                       "    FragColor = vec4(ourColor, 1.0);\n"
+                       "}\n";
     }
 
     const char* vShaderCode = vertexCode.c_str();
