@@ -8,7 +8,7 @@
             "name": "(gdb) Launch",
             "type": "cppdbg",
             "request": "launch",
-            "program": "${workspaceFolder}/build/spinning-cube",
+            "program": "${workspaceFolder}/build/rengine",
             "args": [],
             "stopAtEntry": false,
             "cwd": "${fileDirname}",

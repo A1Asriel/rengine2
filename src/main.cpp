@@ -1,6 +1,3 @@
-#include <SDL2/SDL.h>
-#include <glad/glad.h>
-
 #include <filesystem>
 #include <glm/glm.hpp>
 #include <glm/gtc/matrix_transform.hpp>
@@ -9,79 +6,32 @@
 
 #include "Cube.h"
 #include "Shader.h"
-
-const int SCREEN_WIDTH = 800;
-const int SCREEN_HEIGHT = 600;
+#include "RE_Window.h"
 
 int main(int argc, char* argv[]) {
-    if (SDL_Init(SDL_INIT_VIDEO) < 0) {
-        std::cerr << "SDL could not initialize! SDL_Error: " << SDL_GetError() << std::endl;
+    RE_Window* re_window = new RE_Window("REngine", 800, 600);
+    if (re_window->Init() != 0) {
         return -1;
     }
-
-    SDL_GL_SetAttribute(SDL_GL_CONTEXT_MAJOR_VERSION, 4);
-    SDL_GL_SetAttribute(SDL_GL_CONTEXT_MINOR_VERSION, 6);
-    SDL_GL_SetAttribute(SDL_GL_CONTEXT_PROFILE_MASK, SDL_GL_CONTEXT_PROFILE_CORE);
-
-    SDL_Window* window = SDL_CreateWindow(
-        "Spinning Cube",
-        SDL_WINDOWPOS_UNDEFINED,
-        SDL_WINDOWPOS_UNDEFINED,
-        SCREEN_WIDTH,
-        SCREEN_HEIGHT,
-        SDL_WINDOW_OPENGL | SDL_WINDOW_SHOWN
-    );
-
-    if (!window) {
-        std::cerr << "Window could not be created! SDL_Error: " << SDL_GetError() << std::endl;
-        SDL_Quit();
-        return -1;
-    }
-
-    SDL_GLContext context = SDL_GL_CreateContext(window);
-    if (!context) {
-        std::cerr << "OpenGL context could not be created! SDL_Error: " << SDL_GetError() << std::endl;
-        SDL_DestroyWindow(window);
-        SDL_Quit();
-        return -1;
-    }
-
-    if (!gladLoadGLLoader((GLADloadproc)SDL_GL_GetProcAddress)) {
-        std::cerr << "Failed to initialize GLAD" << std::endl;
-        SDL_DestroyWindow(window);
-        SDL_Quit();
-        return -1;
-    }
-
-    std::cout << "GPU vendor: " << glGetString(GL_VENDOR) << std::endl;
-    std::cout << "Renderer: " << glGetString(GL_RENDERER) << std::endl;
-    std::cout << "OpenGL version: " << glGetString(GL_VERSION) << std::endl;
-    std::cout << "Shading language version: " << glGetString(GL_SHADING_LANGUAGE_VERSION) << std::endl;
-
-    glViewport(0, 0, SCREEN_WIDTH, SCREEN_HEIGHT);
-
-    glEnable(GL_DEPTH_TEST);
 
     Shader shader("", "");
     if (!std::filesystem::exists("shaders/vertex.glsl") || !std::filesystem::exists("shaders/fragment.glsl")) {
+        std::cerr << "ERROR: shaders/ not found" << std::endl;
         if (!std::filesystem::exists("../shaders/vertex.glsl") || !std::filesystem::exists("../shaders/fragment.glsl")) {
+            std::cerr << "ERROR: ../shaders/ not found" << std::endl;
             std::cerr << "Shaders not found!" << std::endl;
-            SDL_DestroyWindow(window);
-            SDL_Quit();
+            delete re_window;
             return -1;
         }
+        std::cout << "DEBUG: ../shaders/ found" << std::endl;
         shader = Shader("../shaders/vertex.glsl", "../shaders/fragment.glsl");
     } else {
+        std::cout << "DEBUG: shaders/ found" << std::endl;
         shader = Shader("shaders/vertex.glsl", "shaders/fragment.glsl");
     }
 
-    std::vector<std::unique_ptr<Cube>> vecCube;
+    re_window->shader = &shader;
 
-    for (int i = 0; i < 10; i++) {
-        std::unique_ptr<Cube> cube = std::make_unique<Cube>();
-        cube->update((float)i);
-        vecCube.push_back(std::move(cube));
-    }
     bool quit = false;
     SDL_Event e;
 
@@ -90,6 +40,7 @@ int main(int argc, char* argv[]) {
     int frames = 0;
 
     while (!quit) {
+        // Проверка ввода
         while (SDL_PollEvent(&e) != 0) {
             if (e.type == SDL_QUIT) {
                 quit = true;
@@ -99,48 +50,22 @@ int main(int argc, char* argv[]) {
                 }
             }
         }
-
+        // Вычислить дельту по времени
         Uint32 currentTime = SDL_GetTicks();
         deltaTime = (currentTime - previousTime) / 1000.0f;
 
+        // Вывести FPS
         if (currentTime / 1000 - previousTime / 1000 >= 1) {
-            std::cout << "FPS: " << std::to_string(frames) << std::endl;
+            std::cout << "INFO: FPS: " << std::to_string(frames) << std::endl;
             frames = 0;
         }
         frames++;
-
         previousTime = currentTime;
-
-        glClearColor(0.53f, 0.39f, 0.72f, 1.0f);
-        glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-
-        glm::mat4 view = glm::mat4(1.0f);
-        view = glm::translate(view, glm::vec3(0.0f, 0.0f, -3.0f));
-
-        glm::mat4 projection = glm::perspective(
-            glm::radians(45.0f),
-            (float)SCREEN_WIDTH / (float)SCREEN_HEIGHT,
-            0.1f,
-            100.0f
-        );
-
-        shader.use();
-
-        shader.setMat4("view", view);
-        shader.setMat4("projection", projection);
-
-        for (std::unique_ptr<Cube>& cube : vecCube) {
-            shader.setMat4("model", cube->getModelMatrix());
-            cube->draw();
-            cube->update(deltaTime);
-        }
-
-        SDL_GL_SwapWindow(window);
+        re_window->Draw(deltaTime);
     }
 
-    SDL_GL_DeleteContext(context);
-    SDL_DestroyWindow(window);
-    SDL_Quit();
+    delete re_window;
+    std::cout << "Goodnight" << std::endl;
 
     return 0;
 }

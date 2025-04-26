@@ -1,5 +1,14 @@
-cmake_minimum_required(VERSION 3.10)
-project(SpinningCube)
+cmake_minimum_required(VERSION 3.11)
+project(REngine)
+
+include(FetchContent)
+
+FetchContent_Declare(
+    glm
+    GIT_REPOSITORY    https://github.com/g-truc/glm.git
+    GIT_TAG    bf71a834948186f4097caa076cd2663c69a10e1e #refs/tags/1.0.1
+)
+FetchContent_MakeAvailable(glm)
 
 set(CMAKE_CXX_STANDARD 17)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
@@ -22,6 +31,7 @@ set(SOURCES
     src/glad.c
     src/Shader.cpp
     src/Cube.cpp
+    src/RE_Window.cpp
 )
 
 # Set include directories
@@ -32,16 +42,17 @@ include_directories(
 )
 
 # Create executable
-add_executable(spinning-cube ${SOURCES})
+add_executable(rengine ${SOURCES})
 
 if(WIN32 OR MINGW)
-    set_target_properties(spinning-cube PROPERTIES LINK_FLAGS "-mconsole")
+    set_target_properties(rengine PROPERTIES LINK_FLAGS "-mconsole")
 endif()
 
 # Link libraries statically
-target_link_libraries(spinning-cube
+target_link_libraries(rengine
     SDL2::SDL2main
     SDL2::SDL2-static
+    glm::glm
     ${EXTRA_LIBS}
     "-static-libgcc" "-static-libstdc++"
 )
