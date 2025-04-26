@@ -7,6 +7,7 @@
 #include "Cube.h"
 #include "Shader.h"
 #include "RE_Window.h"
+#include "Utils.h"
 
 int main(int argc, char* argv[]) {
     RE_Window* re_window = new RE_Window("REngine", 800, 600);
@@ -16,17 +17,15 @@ int main(int argc, char* argv[]) {
 
     Shader shader("", "");
     if (!std::filesystem::exists("shaders/vertex.glsl") || !std::filesystem::exists("shaders/fragment.glsl")) {
-        std::cerr << "ERROR: shaders/ not found" << std::endl;
+        DEBUG("shaders/ not found");
         if (!std::filesystem::exists("../shaders/vertex.glsl") || !std::filesystem::exists("../shaders/fragment.glsl")) {
-            std::cerr << "ERROR: ../shaders/ not found" << std::endl;
-            std::cerr << "Shaders not found!" << std::endl;
+            DEBUG("../shaders/ not found");
+            FATAL("Shaders not found!");
             delete re_window;
             return -1;
         }
-        std::cout << "DEBUG: ../shaders/ found" << std::endl;
         shader = Shader("../shaders/vertex.glsl", "../shaders/fragment.glsl");
     } else {
-        std::cout << "DEBUG: shaders/ found" << std::endl;
         shader = Shader("shaders/vertex.glsl", "shaders/fragment.glsl");
     }
 
@@ -56,7 +55,7 @@ int main(int argc, char* argv[]) {
 
         // Вывести FPS
         if (currentTime / 1000 - previousTime / 1000 >= 1) {
-            std::cout << "INFO: FPS: " << std::to_string(frames) << std::endl;
+            INFO("FPS: " << std::to_string(frames));
             frames = 0;
         }
         frames++;
@@ -65,7 +64,7 @@ int main(int argc, char* argv[]) {
     }
 
     delete re_window;
-    std::cout << "Goodnight" << std::endl;
+    DEBUG("Goodnight");
 
     return 0;
 }

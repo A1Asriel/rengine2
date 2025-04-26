@@ -4,6 +4,7 @@
 #include <iostream>
 #include <glm/gtc/type_ptr.hpp>
 #include <glad/glad.h>
+#include "Utils.h"
 
 Shader::Shader(const char* vertexPath, const char* fragmentPath) {
     std::string vertexCode;
@@ -28,7 +29,7 @@ Shader::Shader(const char* vertexPath, const char* fragmentPath) {
         vertexCode = vShaderStream.str();
         fragmentCode = fShaderStream.str();
     } catch(std::ifstream::failure& e) {
-        std::cerr << "Couldn't read shader: " << e.what() << std::endl;
+        ERROR("Couldn't read shader: " << e.what());
         // Откат к стандартному шейдеру
         vertexCode =   "#version 460 core\n"
                        "layout (location = 0) in vec3 aPos;\n"
@@ -106,13 +107,13 @@ void Shader::checkCompileErrors(unsigned int shader, std::string type) {
         glGetShaderiv(shader, GL_COMPILE_STATUS, &success);
         if (!success) {
             glGetShaderInfoLog(shader, 1024, NULL, infoLog);
-            std::cerr << "Shader compilation error: " << infoLog << std::endl;
+            ERROR("Shader compilation error: " << infoLog);
         }
     } else {
         glGetProgramiv(shader, GL_LINK_STATUS, &success);
         if (!success) {
             glGetProgramInfoLog(shader, 1024, NULL, infoLog);
-            std::cerr << "Shader linking error: " << infoLog << std::endl;
+            ERROR("Shader linking error: " << infoLog);
         }
     }
 }

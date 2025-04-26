@@ -7,6 +7,7 @@
 #include "Cube.h"
 #include <glm/gtc/type_ptr.hpp>
 #include <memory>
+#include "Utils.h"
 
 RE_Window::RE_Window(std::string title, int width, int height) {
     this->title = title;
@@ -30,7 +31,7 @@ SDL_GLContext RE_Window::getSDL_GLContext() {
 
 int RE_Window::Init() {
     if (SDL_Init(SDL_INIT_VIDEO) < 0) {
-        std::cerr << "SDL could not initialize! SDL_Error: " << SDL_GetError() << std::endl;
+        FATAL("SDL could not initialize! SDL_Error: " << SDL_GetError());
         return -1;
     }
 
@@ -48,30 +49,30 @@ int RE_Window::Init() {
     );
 
     if (!sdl_window) {
-        std::cerr << "Window could not be created! SDL_Error: " << SDL_GetError() << std::endl;
+        FATAL("Window could not be created! SDL_Error: " << SDL_GetError());
         SDL_Quit();
         return -1;
     }
 
     sdl_glcontext = SDL_GL_CreateContext(sdl_window);
     if (!sdl_glcontext) {
-        std::cerr << "OpenGL sdl_context could not be created! SDL_Error: " << SDL_GetError() << std::endl;
+        FATAL("OpenGL sdl_context could not be created! SDL_Error: " << SDL_GetError());
         SDL_DestroyWindow(sdl_window);
         SDL_Quit();
         return -1;
     }
 
     if (!gladLoadGLLoader((GLADloadproc)SDL_GL_GetProcAddress)) {
-        std::cerr << "Failed to initialize GLAD" << std::endl;
+        FATAL("Failed to initialize GLAD");
         SDL_DestroyWindow(sdl_window);
         SDL_Quit();
         return -1;
     }
 
-    std::cout << "GPU vendor: " << glGetString(GL_VENDOR) << std::endl;
-    std::cout << "Renderer: " << glGetString(GL_RENDERER) << std::endl;
-    std::cout << "OpenGL version: " << glGetString(GL_VERSION) << std::endl;
-    std::cout << "Shading language version: " << glGetString(GL_SHADING_LANGUAGE_VERSION) << std::endl;
+    INFO("GPU vendor: " << glGetString(GL_VENDOR));
+    INFO("Renderer: " << glGetString(GL_RENDERER));
+    INFO("OpenGL version: " << glGetString(GL_VERSION));
+    INFO("Shading language version: " << glGetString(GL_SHADING_LANGUAGE_VERSION));
 
     glViewport(0, 0, width, height);
     glEnable(GL_DEPTH_TEST);
