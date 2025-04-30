@@ -32,6 +32,7 @@ set(SOURCES
     src/Shader.cpp
     src/Cube.cpp
     src/RE_Window.cpp
+    src/SceneLoader.cpp
 )
 
 # Set include directories

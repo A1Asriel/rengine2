@@ -1,10 +1,12 @@
-#include <SDL2/SDL.h>
-#include "Shader.h"
-#include "Cube.h"
-#include <memory>
+#ifndef RE_WINDOW_H
+#define RE_WINDOW_H
 
-class RE_Window
-{
+#include <SDL2/SDL.h>
+#include <memory>
+#include "Shader.h"
+#include "Scene.h"
+
+class RE_Window {
 private:
     SDL_Window* sdl_window;
     SDL_GLContext sdl_glcontext;
@@ -15,9 +17,10 @@ public:
     ~RE_Window();
     SDL_Window* getSDL_Window();
     SDL_GLContext getSDL_GLContext();
+    Shader* shader;
+    Scene* scene;
     int Init();
     void Draw(double deltaTime);
-
-    Shader* shader;
-    std::vector<std::unique_ptr<Cube>> vecCube;  // FIXME: Перенести кубы в отдельную структуру
 };
+
+#endif

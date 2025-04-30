@@ -1,3 +1,4 @@
+#pragma once
 #define DEBUG_MODE
 
 #define DEBUG(TEXT)

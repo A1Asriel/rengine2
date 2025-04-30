@@ -1,12 +1,13 @@
-#include <iostream>
+#include "RE_Window.h"
+
 #include <glad/glad.h>
+
 #include <glm/glm.hpp>
 #include <glm/gtc/matrix_transform.hpp>
+#include <iostream>
 #include <vector>
-#include "RE_Window.h"
+
 #include "Cube.h"
-#include <glm/gtc/type_ptr.hpp>
-#include <memory>
 #include "Utils.h"
 
 RE_Window::RE_Window(std::string title, int width, int height) {
@@ -77,16 +78,6 @@ int RE_Window::Init() {
     glViewport(0, 0, width, height);
     glEnable(GL_DEPTH_TEST);
 
-
-    // FIXME: Кубы
-    for (int i = 0; i < 10; i++) {
-        std::unique_ptr<Cube> cube = std::make_unique<Cube>();
-        cube->update((float)i);
-        vecCube.push_back(std::move(cube));
-    }
-
-
-
     return 0;
 }
 
@@ -108,11 +99,34 @@ void RE_Window::Draw(double deltaTime) {
     shader->setMat4("view", view);
     shader->setMat4("projection", projection);
 
-    for (std::unique_ptr<Cube>& cube : this->vecCube) {
-        shader->setMat4("model", cube->getModelMatrix());
-        cube->draw();
-        cube->update(deltaTime);
+    std::vector<SceneNode*> toBeDiscarded;
+    for (const SceneNode node : scene->nodes) {
+        if (node.mesh == MeshType::Cube) {
+            Cube cube;
+            glm::mat4 model = cube.getModelMatrix();
+            model = glm::translate(model, node.position);
+            model = glm::rotate(model, glm::radians(node.rotation.x), glm::vec3(1.0f, 0.0f, 0.0f));
+            model = glm::rotate(model, glm::radians(node.rotation.y), glm::vec3(0.0f, 1.0f, 0.0f));
+            model = glm::rotate(model, glm::radians(node.rotation.z), glm::vec3(0.0f, 0.0f, 1.0f));
+            model = glm::scale(model, node.scale);
+            shader->setMat4("model", model);
+            cube.draw();
+        } else {
+            ERROR("Mesh type not yet implemented");
+            toBeDiscarded.push_back(const_cast<SceneNode*>(&node));
+        }
     }
+
+    // Удалить нереализованные объекты из сцены
+    for (SceneNode* nodePointer : toBeDiscarded) {
+        int curPos = -1;
+        for (const SceneNode node: scene->nodes) {
+            curPos++;
+            if (&node == nodePointer) break;
+        }
+        if (curPos > -1) scene->nodes.erase(scene->nodes.begin() + curPos);
+    }
+    toBeDiscarded.clear();
 
     SDL_GL_SwapWindow(sdl_window);
 }

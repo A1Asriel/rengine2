@@ -1,0 +1,50 @@
+#include "SceneLoader.h"
+
+#include <fstream>
+#include <iostream>
+#include <sstream>
+#include <vector>
+
+#include "Utils.h"
+
+bool SceneLoader::load(const std::string& file, Scene* scene) {
+    std::ifstream input(file);
+    if (!input.is_open()) {
+        return false;
+    }
+
+    std::string line;
+    while (std::getline(input, line)) {
+        std::istringstream iss(line);
+        std::string token;
+
+        std::vector<std::string> tokens;
+        while (std::getline(iss, token, ',')) {
+            tokens.push_back(token);
+        }
+
+        if (tokens.size() != 10) {
+            return false;
+        }
+
+        SceneNode node;
+        node.mesh = tokens[0] == "cube" ? MeshType::Cube : MeshType::NotImplemented;
+        node.position.x = std::stof(tokens[1]);
+        node.position.y = std::stof(tokens[2]);
+        node.position.z = std::stof(tokens[3]);
+        node.rotation.x = std::stof(tokens[4]);
+        node.rotation.y = std::stof(tokens[5]);
+        node.rotation.z = std::stof(tokens[6]);
+        node.scale.x = std::stof(tokens[7]);
+        node.scale.y = std::stof(tokens[8]);
+        node.scale.z = std::stof(tokens[9]);
+
+        scene->nodes.push_back(node);
+    }
+
+    return true;
+}
+
+bool SceneLoader::save(const std::string& file, Scene* scene) {
+    // TODO: To be implemented
+}

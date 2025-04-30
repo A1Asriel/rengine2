@@ -1,19 +1,26 @@
 #include <filesystem>
-#include <glm/glm.hpp>
-#include <glm/gtc/matrix_transform.hpp>
-#include <glm/gtc/type_ptr.hpp>
 #include <iostream>
 
-#include "Cube.h"
-#include "Shader.h"
 #include "RE_Window.h"
+#include "SceneLoader.h"
+#include "Shader.h"
 #include "Utils.h"
 
 int main(int argc, char* argv[]) {
     RE_Window* re_window = new RE_Window("REngine", 800, 600);
     if (re_window->Init() != 0) {
+        FATAL("Couldn't initialize window");
         return -1;
     }
+
+    Scene* scene = new Scene();
+    if (!SceneLoader::load("scene.csv", scene)) {
+        if (!SceneLoader::load("../scene.csv", scene)) {
+            FATAL("Couldn't load the scene");
+            return -1;
+        }
+    }
+    re_window->scene = scene;
 
     Shader shader("", "");
     if (!std::filesystem::exists("shaders/vertex.glsl") || !std::filesystem::exists("shaders/fragment.glsl")) {
