@@ -10,11 +10,8 @@
 #include "Cube.h"
 #include "Utils.h"
 
-RE_Window::RE_Window(std::string title, int width, int height) {
-    this->title = title;
-    this->width = width;
-    this->height = height;
-}
+RE_Window::RE_Window(std::string title, int width, int height)
+    : title(title), width(width), height(height), camera(width, height) {}
 
 RE_Window::~RE_Window() {
     SDL_GL_DeleteContext(sdl_glcontext);
@@ -85,19 +82,9 @@ void RE_Window::Draw(double deltaTime) {
     glClearColor(0.53f, 0.39f, 0.72f, 1.0f);
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
-    glm::mat4 view = glm::mat4(1.0f);
-    view = glm::translate(view, glm::vec3(0.0f, 0.0f, -3.0f));
-
-    glm::mat4 projection = glm::perspective(
-        glm::radians(45.0f),
-        (float)width / (float)height,
-        0.1f,
-        100.0f
-    );
-
     shader->use();
-    shader->setMat4("view", view);
-    shader->setMat4("projection", projection);
+    shader->setMat4("view", camera.getViewMatrix());
+    shader->setMat4("projection", camera.getProjectionMatrix());
 
     std::vector<SceneNode*> toBeDiscarded;
     for (const SceneNode node : scene->nodes) {

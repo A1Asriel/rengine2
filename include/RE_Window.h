@@ -2,7 +2,10 @@
 #define RE_WINDOW_H
 
 #include <SDL2/SDL.h>
+
 #include <memory>
+
+#include "Camera.h"
 #include "Shader.h"
 #include "Scene.h"
 
@@ -19,6 +22,7 @@ public:
     SDL_GLContext getSDL_GLContext();
     Shader* shader;
     Scene* scene;
+    Camera camera;
     int Init();
     void Draw(double deltaTime);
 };

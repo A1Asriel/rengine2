@@ -33,6 +33,7 @@ set(SOURCES
     src/Cube.cpp
     src/RE_Window.cpp
     src/SceneLoader.cpp
+    src/Camera.cpp
 )
 
 # Set include directories

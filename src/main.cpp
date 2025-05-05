@@ -48,17 +48,30 @@ int main(int argc, char* argv[]) {
     while (!quit) {
         // Проверка ввода
         while (SDL_PollEvent(&e) != 0) {
-            if (e.type == SDL_QUIT) {
+            switch (e.type)
+            {
+            case SDL_QUIT:
                 quit = true;
-            } else if (e.type == SDL_KEYDOWN) {
+                break;
+            case SDL_KEYDOWN:
                 if (e.key.keysym.sym == SDLK_ESCAPE) {
                     quit = true;
+                    break;
                 }
+                break;
+            case SDL_MOUSEMOTION:
+                if (SDL_GetMouseState(NULL, NULL) & SDL_BUTTON_RMASK) {
+                    re_window->camera.processMouse(e.motion.xrel, e.motion.yrel);
+                }
+                break;
+            default:
+                break;
             }
         }
         // Вычислить дельту по времени
         Uint32 currentTime = SDL_GetTicks();
         deltaTime = (currentTime - previousTime) / 1000.0f;
+        re_window->camera.processKeyboard(deltaTime, SDL_GetKeyboardState(NULL));
 
         // Вывести FPS
         if (currentTime / 1000 - previousTime / 1000 >= 1) {
