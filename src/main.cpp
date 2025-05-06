@@ -22,7 +22,7 @@ int main(int argc, char* argv[]) {
     }
     re_window->scene = scene;
 
-    Shader shader("", "");
+    Shader* shader;
     if (!std::filesystem::exists("shaders/vertex.glsl") || !std::filesystem::exists("shaders/fragment.glsl")) {
         DEBUG("shaders/ not found");
         if (!std::filesystem::exists("../shaders/vertex.glsl") || !std::filesystem::exists("../shaders/fragment.glsl")) {
@@ -31,12 +31,12 @@ int main(int argc, char* argv[]) {
             delete re_window;
             return -1;
         }
-        shader = Shader("../shaders/vertex.glsl", "../shaders/fragment.glsl");
+        shader = new Shader("../shaders/vertex.glsl", "../shaders/fragment.glsl");
     } else {
-        shader = Shader("shaders/vertex.glsl", "shaders/fragment.glsl");
+        shader = new Shader("shaders/vertex.glsl", "shaders/fragment.glsl");
     }
 
-    re_window->shader = &shader;
+    re_window->shader = shader;
 
     bool quit = false;
     SDL_Event e;

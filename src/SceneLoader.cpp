@@ -16,6 +16,9 @@ bool SceneLoader::load(const std::string& file, Scene* scene) {
     while (std::getline(input, line)) {
         std::istringstream iss(line);
         std::string token;
+        if (line.length() < 2 || line.substr(0,2) == "//") {
+            continue;
+        }
 
         std::vector<std::string> tokens;
         while (std::getline(iss, token, ',')) {
@@ -23,20 +26,29 @@ bool SceneLoader::load(const std::string& file, Scene* scene) {
         }
 
         if (tokens.size() != 10) {
-            return false;
+            ERROR("Line \"" << line << "\" has incorrect amount of parameters");
+            continue;
         }
 
         SceneNode node;
-        node.mesh = tokens[0] == "cube" ? MeshType::Cube : MeshType::NotImplemented;
-        node.position.x = std::stof(tokens[1]);
-        node.position.y = std::stof(tokens[2]);
-        node.position.z = std::stof(tokens[3]);
-        node.rotation.x = std::stof(tokens[4]);
-        node.rotation.y = std::stof(tokens[5]);
-        node.rotation.z = std::stof(tokens[6]);
-        node.scale.x = std::stof(tokens[7]);
-        node.scale.y = std::stof(tokens[8]);
-        node.scale.z = std::stof(tokens[9]);
+        if (tokens[0] == "cube")
+            node.mesh = MeshType::Cube;
+        else
+            node.mesh = MeshType::NotImplemented;
+        try {
+            node.position.x = std::stof(tokens[1]);
+            node.position.y = std::stof(tokens[2]);
+            node.position.z = std::stof(tokens[3]);
+            node.rotation.x = std::stof(tokens[4]);
+            node.rotation.y = std::stof(tokens[5]);
+            node.rotation.z = std::stof(tokens[6]);
+            node.scale.x = std::stof(tokens[7]);
+            node.scale.y = std::stof(tokens[8]);
+            node.scale.z = std::stof(tokens[9]);
+        } catch(const std::exception& e) {
+            ERROR("Line \"" << line << "\" could not be interpreted");
+            continue;
+        }
 
         scene->nodes.push_back(node);
     }
