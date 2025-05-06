@@ -30,7 +30,8 @@ set(SOURCES
     src/main.cpp
     src/glad.c
     src/Shader.cpp
-    src/Cube.cpp
+    src/CubeMesh.cpp
+    src/SphereMesh.cpp
     src/RE_Window.cpp
     src/SceneLoader.cpp
     src/Camera.cpp

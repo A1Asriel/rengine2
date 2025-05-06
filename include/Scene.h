@@ -5,7 +5,7 @@
 #include <string>
 #include <vector>
 
-enum class MeshType { Cube, NotImplemented };
+enum class MeshType { Cube, Sphere, NotImplemented };
 
 struct SceneNode {
     MeshType mesh;

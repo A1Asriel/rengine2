@@ -33,6 +33,8 @@ bool SceneLoader::load(const std::string& file, Scene* scene) {
         SceneNode node;
         if (tokens[0] == "cube")
             node.mesh = MeshType::Cube;
+        else if (tokens[0] == "sphere")
+            node.mesh = MeshType::Sphere;
         else
             node.mesh = MeshType::NotImplemented;
         try {

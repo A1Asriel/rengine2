@@ -1,9 +1,10 @@
-#include "Cube.h"
+#include "CubeMesh.h"
 #include <glad/glad.h>
 #include <glm/gtc/matrix_transform.hpp>
+#include <vector>
 
-Cube::Cube() {
-    vertices = {
+void CubeMesh::init() {
+    std::vector<float> vertices = {
         -0.5f, -0.5f, -0.5f,  // Координаты
         1.0f, 0.0f, 0.0f,  // Цвета
 
@@ -29,7 +30,7 @@ Cube::Cube() {
         0.5f, 0.5f, 0.5f
     };
 
-    indices = {
+    std::vector<unsigned> indices = {
         0, 1, 2, 2, 3, 0,  // ф
         3, 2, 6, 6, 7, 3,  // п
         7, 6, 5, 5, 4, 7,  // т
@@ -62,14 +63,14 @@ Cube::Cube() {
     glBindVertexArray(0);
 }
 
-Cube::~Cube() {
+CubeMesh::~CubeMesh() {
     glDeleteVertexArrays(1, &VAO);
     glDeleteBuffers(1, &VBO);
     glDeleteBuffers(1, &EBO);
 }
 
-void Cube::draw() {
+void CubeMesh::draw(const Shader& shader) {
     glBindVertexArray(VAO);
-    glDrawElements(GL_TRIANGLES, indices.size(), GL_UNSIGNED_INT, 0);
+    glDrawElements(GL_TRIANGLES, 36, GL_UNSIGNED_INT, 0);
     glBindVertexArray(0);
 }

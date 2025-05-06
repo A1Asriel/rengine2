@@ -6,7 +6,8 @@
 #include <glm/gtc/matrix_transform.hpp>
 #include <vector>
 
-#include "Cube.h"
+#include "CubeMesh.h"
+#include "SphereMesh.h"
 #include "Logging.h"
 
 RE_Window::RE_Window(std::string title, int width, int height)
@@ -92,21 +93,30 @@ void RE_Window::Draw(double deltaTime) {
     std::vector<size_t> toBeDiscarded;
     size_t i = 0;
     for (const SceneNode node : scene->nodes) {
-        if (node.mesh == MeshType::Cube) {
-            Cube cube;
-            glm::mat4 model = glm::mat4(1.0f);
-            model = glm::translate(model, node.position);
-            model = glm::rotate(model, glm::radians(node.rotation.x), glm::vec3(1.0f, 0.0f, 0.0f));
-            model = glm::rotate(model, glm::radians(node.rotation.y), glm::vec3(0.0f, 1.0f, 0.0f));
-            model = glm::rotate(model, glm::radians(node.rotation.z), glm::vec3(0.0f, 0.0f, 1.0f));
-            model = glm::scale(model, node.scale);
-            shader->setMat4("model", model);
-            cube.draw();
-        } 
-        else {
+        glm::mat4 model = glm::mat4(1.0f);
+        model = glm::translate(model, node.position);
+        model = glm::rotate(model, glm::radians(node.rotation.x), glm::vec3(1.0f, 0.0f, 0.0f));
+        model = glm::rotate(model, glm::radians(node.rotation.y), glm::vec3(0.0f, 1.0f, 0.0f));
+        model = glm::rotate(model, glm::radians(node.rotation.z), glm::vec3(0.0f, 0.0f, 1.0f));
+        model = glm::scale(model, node.scale);
+        shader->setMat4("model", model);
+        Mesh* mesh;
+        switch (node.mesh) {
+        case MeshType::Cube:
+            mesh = new CubeMesh();
+            break;
+        case MeshType::Sphere:
+            mesh = new SphereMesh();
+            break;
+        default:
             ERROR("Mesh type not yet implemented");
             toBeDiscarded.push_back(i);
+            i++;
+            continue;
         }
+        mesh->init();
+        mesh->draw(*shader);
+        delete mesh;
         i++;
     }
 
