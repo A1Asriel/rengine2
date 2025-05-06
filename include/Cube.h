@@ -12,14 +12,10 @@ public:
     void draw();
     void update(float deltaTime);
 
-    glm::mat4 getModelMatrix() const;
-
 private:
     unsigned int VAO, VBO, EBO;
     std::vector<float> vertices;
     std::vector<unsigned int> indices;
-
-    float rotationAngle;
 };
 
 #endif

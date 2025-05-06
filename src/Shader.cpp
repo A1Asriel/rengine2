@@ -4,10 +4,9 @@
 
 #include <fstream>
 #include <glm/gtc/type_ptr.hpp>
-#include <iostream>
 #include <sstream>
 
-#include "Utils.h"
+#include "Logging.h"
 
 Shader::Shader(const char* vertexPath, const char* fragmentPath) {
     std::string vertexCode;
@@ -50,7 +49,10 @@ Shader::Shader(const char* vertexPath, const char* fragmentPath) {
                        "in vec3 ourColor;\n"
                        "out vec4 FragColor;\n"
                        "void main() {\n"
-                       "    FragColor = vec4(ourColor, 1.0);\n"
+                       "    if (!gl_FrontFacing)\n"
+                       "        FragColor = vec4(ourColor, 1.0);\n"
+                       "    else\n"
+                       "        discard;\n"
                        "}\n";
     }
 

@@ -4,11 +4,10 @@
 
 #include <glm/glm.hpp>
 #include <glm/gtc/matrix_transform.hpp>
-#include <iostream>
 #include <vector>
 
 #include "Cube.h"
-#include "Utils.h"
+#include "Logging.h"
 
 RE_Window::RE_Window(std::string title, int width, int height)
     : title(title), width(width), height(height), camera(width, height) {}
@@ -75,6 +74,10 @@ int RE_Window::Init() {
     glViewport(0, 0, width, height);
     glEnable(GL_DEPTH_TEST);
 
+    if (SDL_GL_SetSwapInterval(1) != 0) {
+        ERROR("Couldn't set up Vsync: " << SDL_GetError());
+    }
+
     return 0;
 }
 
@@ -86,11 +89,12 @@ void RE_Window::Draw(double deltaTime) {
     shader->setMat4("view", camera.getViewMatrix());
     shader->setMat4("projection", camera.getProjectionMatrix());
 
-    std::vector<SceneNode*> toBeDiscarded;
+    std::vector<size_t> toBeDiscarded;
+    size_t i = 0;
     for (const SceneNode node : scene->nodes) {
         if (node.mesh == MeshType::Cube) {
             Cube cube;
-            glm::mat4 model = cube.getModelMatrix();
+            glm::mat4 model = glm::mat4(1.0f);
             model = glm::translate(model, node.position);
             model = glm::rotate(model, glm::radians(node.rotation.x), glm::vec3(1.0f, 0.0f, 0.0f));
             model = glm::rotate(model, glm::radians(node.rotation.y), glm::vec3(0.0f, 1.0f, 0.0f));
@@ -98,21 +102,17 @@ void RE_Window::Draw(double deltaTime) {
             model = glm::scale(model, node.scale);
             shader->setMat4("model", model);
             cube.draw();
-        } else {
+        } 
+        else {
             ERROR("Mesh type not yet implemented");
-            toBeDiscarded.push_back(const_cast<SceneNode*>(&node));
+            toBeDiscarded.push_back(i);
         }
+        i++;
     }
 
     // Удалить нереализованные объекты из сцены
-    for (SceneNode* nodePointer : toBeDiscarded) {
-        int curPos = -1;
-        for (const SceneNode node: scene->nodes) {
-            curPos++;
-            if (&node == nodePointer) break;
-        }
-        if (curPos > -1) scene->nodes.erase(scene->nodes.begin() + curPos);
-    }
+    for (std::vector<size_t>::reverse_iterator it = toBeDiscarded.rbegin(); it != toBeDiscarded.rend(); ++it)
+        scene->nodes.erase(scene->nodes.begin() + *it);
     toBeDiscarded.clear();
 
     SDL_GL_SwapWindow(sdl_window);

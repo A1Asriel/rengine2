@@ -1,11 +1,10 @@
 #include "SceneLoader.h"
 
 #include <fstream>
-#include <iostream>
 #include <sstream>
 #include <vector>
 
-#include "Utils.h"
+#include "Logging.h"
 
 bool SceneLoader::load(const std::string& file, Scene* scene) {
     std::ifstream input(file);

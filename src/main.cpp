@@ -4,7 +4,7 @@
 #include "RE_Window.h"
 #include "SceneLoader.h"
 #include "Shader.h"
-#include "Utils.h"
+#include "Logging.h"
 
 int main(int argc, char* argv[]) {
     RE_Window* re_window = new RE_Window("REngine", 800, 600);

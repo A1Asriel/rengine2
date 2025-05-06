@@ -2,7 +2,7 @@
 #include <glad/glad.h>
 #include <glm/gtc/matrix_transform.hpp>
 
-Cube::Cube() : rotationAngle(0.0f) {
+Cube::Cube() {
     vertices = {
         -0.5f, -0.5f, -0.5f,  // Координаты
         1.0f, 0.0f, 0.0f,  // Цвета
@@ -72,17 +72,4 @@ void Cube::draw() {
     glBindVertexArray(VAO);
     glDrawElements(GL_TRIANGLES, indices.size(), GL_UNSIGNED_INT, 0);
     glBindVertexArray(0);
-}
-
-void Cube::update(float deltaTime) {
-    rotationAngle += 50.0f * deltaTime;
-    if (rotationAngle >= 360.0f) {
-        rotationAngle -= 360.0f;
-    }
-}
-
-glm::mat4 Cube::getModelMatrix() const {
-    glm::mat4 model = glm::mat4(1.0f);
-    model = glm::rotate(model, glm::radians(rotationAngle), glm::vec3(0.5f, 1.0f, 0.0f));
-    return model;
 }
