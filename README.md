@@ -24,19 +24,19 @@ $ sudo apt install gcc-mingw-w64
 ### Обычная сборка
 
 ```bash
-cmake build && cmake --build build --target rengine && build/rengine
+cmake -DCMAKE_POLICY_VERSION_MINIMUM:STRING=3.5 build && cmake --build build --target rengine && build/rengine
 ```
 
 ### Покрытие тестов
 
 ```bash
-cmake -DCMAKE_BUILD_TYPE:STRING=Debug -DCOVERAGE:BOOL=true build && cmake --build build --target coverage
+cmake -DCMAKE_BUILD_TYPE:STRING=Debug -DCMAKE_POLICY_VERSION_MINIMUM:STRING=3.5 -DCOVERAGE:BOOL=true build && cmake --build build --target coverage
 ```
 
 ### Профилирование
 
 ```bash
-cmake -DCMAKE_BUILD_TYPE:STRING=Debug -DPROFILING:BOOL=true build && cmake --build build --target profile
+cmake -DCMAKE_BUILD_TYPE:STRING=Debug -DCMAKE_POLICY_VERSION_MINIMUM:STRING=3.5 -DPROFILING:BOOL=true build && cmake --build build --target profile
 ```
 
 ## Сборка под Windows
@@ -47,17 +47,17 @@ cmake -DCMAKE_BUILD_TYPE:STRING=Debug -DPROFILING:BOOL=true build && cmake --bui
 ### Обычная сборка
 
 ```cmd
-cmake -DCMAKE_TOOLCHAIN_FILE:FILEPATH=./cmake/mingw-w64-x86_64.cmake -G Ninja build && cmake --build build --target rengine && build\rengine.exe
+cmake -DCMAKE_TOOLCHAIN_FILE:FILEPATH=./cmake/mingw-w64-x86_64.cmake -DCMAKE_POLICY_VERSION_MINIMUM:STRING=3.5 -G Ninja build && cmake --build build --target rengine && build\rengine.exe
 ```
 
 ### Покрытие тестов
 
 ```cmd
-cmake -DCMAKE_TOOLCHAIN_FILE:FILEPATH=./cmake/mingw-w64-x86_64.cmake -DCOVERAGE -G Ninja build && cmake --build build --target coverage
+cmake -DCMAKE_TOOLCHAIN_FILE:FILEPATH=./cmake/mingw-w64-x86_64.cmake -DCMAKE_POLICY_VERSION_MINIMUM:STRING=3.5 -DCOVERAGE -G Ninja build && cmake --build build --target coverage
 ```
 
 ### Профилирование
 
 ```cmd
-cmake -DCMAKE_TOOLCHAIN_FILE:FILEPATH=./cmake/mingw-w64-x86_64.cmake -DPROFILING -G Ninja build && cmake --build build --target profile
+cmake -DCMAKE_TOOLCHAIN_FILE:FILEPATH=./cmake/mingw-w64-x86_64.cmake -DCMAKE_POLICY_VERSION_MINIMUM:STRING=3.5 -DPROFILING -G Ninja build && cmake --build build --target profile
 ```
