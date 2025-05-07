@@ -112,8 +112,8 @@ if(PROFILING)
         set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -pg -O2 -no-pie")
         add_custom_target(profile
             DEPENDS rengine
-            COMMAND ${CMAKE_BINARY_DIR}/rengine.exe
-            COMMAND gprof ${CMAKE_BINARY_DIR}/rengine.exe ${CMAKE_BINARY_DIR}/gmon.out > ${CMAKE_BINARY_DIR}/profiling.txt
+            COMMAND ${CMAKE_BINARY_DIR}/rengine${CMAKE_EXECUTABLE_SUFFIX}
+            COMMAND gprof ${CMAKE_BINARY_DIR}/rengine${CMAKE_EXECUTABLE_SUFFIX} ${CMAKE_BINARY_DIR}/gmon.out > ${CMAKE_BINARY_DIR}/profiling.txt
             COMMAND ${CMAKE_COMMAND} -E rm ${CMAKE_BINARY_DIR}/gmon.out
             WORKING_DIRECTORY ${CMAKE_BINARY_DIR}
         )
