@@ -4,6 +4,7 @@
 
 #include <glm/glm.hpp>
 #include <glm/gtc/matrix_transform.hpp>
+#include <algorithm>
 #include <vector>
 
 #include "CubeMesh.h"
@@ -90,8 +91,6 @@ void RE_Window::Draw(double deltaTime) {
     shader->setMat4("view", camera.getViewMatrix());
     shader->setMat4("projection", camera.getProjectionMatrix());
 
-    std::vector<size_t> toBeDiscarded;
-    size_t i = 0;
     for (const SceneNode node : scene->nodes) {
         glm::mat4 model = glm::mat4(1.0f);
         model = glm::translate(model, node.position);
@@ -110,20 +109,17 @@ void RE_Window::Draw(double deltaTime) {
             break;
         default:
             ERROR("Mesh type not yet implemented");
-            toBeDiscarded.push_back(i);
-            i++;
             continue;
         }
         mesh->init();
         mesh->draw(*shader);
         delete mesh;
-        i++;
     }
 
     // Удалить нереализованные объекты из сцены
-    for (std::vector<size_t>::reverse_iterator it = toBeDiscarded.rbegin(); it != toBeDiscarded.rend(); ++it)
-        scene->nodes.erase(scene->nodes.begin() + *it);
-    toBeDiscarded.clear();
+    scene->nodes.erase(std::remove_if(scene->nodes.begin(), scene->nodes.end(), [&](SceneNode node) {
+        return node.mesh == MeshType::NotImplemented;
+    }), scene->nodes.end());
 
     SDL_GL_SwapWindow(sdl_window);
 }

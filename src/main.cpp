@@ -8,8 +8,9 @@
 
 int main(int argc, char* argv[]) {
     RE_Window* re_window = new RE_Window("REngine", 800, 600);
-    if (re_window->Init() != 0) {
+    if (re_window && re_window->Init() != 0) {
         FATAL("Couldn't initialize window");
+        delete re_window;
         return -1;
     }
 
@@ -17,6 +18,7 @@ int main(int argc, char* argv[]) {
     if (!SceneLoader::load("scene.csv", scene)) {
         if (!SceneLoader::load("../scene.csv", scene)) {
             FATAL("Couldn't load the scene");
+            delete re_window;
             return -1;
         }
     }

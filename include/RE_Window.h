@@ -3,8 +3,6 @@
 
 #include <SDL2/SDL.h>
 
-#include <memory>
-
 #include "Camera.h"
 #include "Shader.h"
 #include "Scene.h"
