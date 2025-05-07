@@ -47,17 +47,17 @@ cmake -DCMAKE_BUILD_TYPE:STRING=Debug -DPROFILING:BOOL=true build && cmake --bui
 ### Обычная сборка
 
 ```cmd
-cmake -DCMAKE_TOOLCHAIN_FILE:FILEPATH=./cmake/mingw-w64-x86_64.cmake build && cmake --build build --target rengine && build\rengine.exe
+cmake -DCMAKE_TOOLCHAIN_FILE:FILEPATH=./cmake/mingw-w64-x86_64.cmake -G Ninja build && cmake --build build --target rengine && build\rengine.exe
 ```
 
 ### Покрытие тестов
 
 ```cmd
-cmake -DCMAKE_TOOLCHAIN_FILE:FILEPATH=./cmake/mingw-w64-x86_64.cmake -DCOVERAGE build && cmake --build build --target coverage
+cmake -DCMAKE_TOOLCHAIN_FILE:FILEPATH=./cmake/mingw-w64-x86_64.cmake -DCOVERAGE -G Ninja build && cmake --build build --target coverage
 ```
 
 ### Профилирование
 
 ```cmd
-cmake -DCMAKE_TOOLCHAIN_FILE:FILEPATH=./cmake/mingw-w64-x86_64.cmake -DPROFILING build && cmake --build build --target profile
+cmake -DCMAKE_TOOLCHAIN_FILE:FILEPATH=./cmake/mingw-w64-x86_64.cmake -DPROFILING -G Ninja build && cmake --build build --target profile
 ```
