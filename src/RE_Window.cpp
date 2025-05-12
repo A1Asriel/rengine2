@@ -6,10 +6,14 @@
 #include <glm/gtc/matrix_transform.hpp>
 #include <algorithm>
 #include <vector>
+#include <filesystem>
 
 #include "CubeMesh.h"
 #include "SphereMesh.h"
 #include "Logging.h"
+#include "Texture.h"
+
+void applyTexture(Mesh* mesh, std::string texturePath);
 
 RE_Window::RE_Window(std::string title, int width, int height)
     : title(title), width(width), height(height), camera(width, height) {}
@@ -99,21 +103,28 @@ void RE_Window::Draw(double deltaTime) {
         model = glm::rotate(model, glm::radians(node.rotation.z), glm::vec3(0.0f, 0.0f, 1.0f));
         model = glm::scale(model, node.scale);
         shader->setMat4("model", model);
-        Mesh* mesh;
         switch (node.mesh) {
-        case MeshType::Cube:
-            mesh = new CubeMesh();
+        case MeshType::Cube: {
+            CubeMesh* mesh = new CubeMesh();
+            applyTexture(mesh, node.texturePath);
+            mesh->init();
+            mesh->draw(*shader);
+            delete mesh;
             break;
-        case MeshType::Sphere:
-            mesh = new SphereMesh();
-            break;
-        default:
-            ERROR("Mesh type not yet implemented");
-            continue;
         }
-        mesh->init();
-        mesh->draw(*shader);
-        delete mesh;
+        case MeshType::Sphere: {
+            SphereMesh* mesh = new SphereMesh();
+            applyTexture(mesh, node.texturePath);
+            mesh->init();
+            mesh->draw(*shader);
+            delete mesh;
+            break;
+        }
+        default: {
+            ERROR("Mesh type not yet implemented");
+            break;
+        }
+        }
     }
 
     // Удалить нереализованные объекты из сцены
@@ -122,4 +133,24 @@ void RE_Window::Draw(double deltaTime) {
     }), scene->nodes.end());
 
     SDL_GL_SwapWindow(sdl_window);
+}
+
+void applyTexture(Mesh* mesh, std::string texturePath) {
+    if (texturePath.empty()) return;
+
+    Texture* tex = new Texture();
+    if (Texture::textures.count(texturePath) > 0) {
+        mesh->texture = Texture::textures[texturePath];
+    } else if (tex->loadBMP(texturePath)) {
+        Texture::textures[texturePath] = tex;
+        mesh->texture = tex;
+    } else if (tex->loadBMP("./textures/" + texturePath)) {
+        Texture::textures[texturePath] = tex;
+        mesh->texture = tex;
+    } else if (tex->loadBMP("../textures/" + texturePath)) {
+        Texture::textures[texturePath] = tex;
+        mesh->texture = tex;
+    } else {
+        ERROR("Failed to load texture: " + texturePath);
+    }
 }

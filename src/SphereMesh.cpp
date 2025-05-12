@@ -9,8 +9,8 @@ void SphereMesh::init() {
 }
 
 void SphereMesh::init(int vslices, int hslices) {
-    std::vector<float> vertices;
-    std::vector<unsigned> indices;
+    std::vector<float> vertices((vslices + 1) * (hslices + 1) * 8);
+    std::vector<unsigned> indices(vslices * hslices * 6);
 
     int vindex = 0;
     int iindex = 0;
@@ -26,12 +26,22 @@ void SphereMesh::init(int vslices, int hslices) {
             y = cos(theta);
             z = sin(theta) * sin(phi);
 
-            vertices.push_back(x/M_PI);
-            vertices.push_back(y/M_PI);
-            vertices.push_back(z/M_PI);
-            vertices.push_back(sin(theta) * cos(phi));
-            vertices.push_back(cos(theta));
-            vertices.push_back(sin(theta) * sin(phi));
+            // Координаты
+            vertices[vindex++] = x/M_PI;
+            vertices[vindex++] = y/M_PI;
+            vertices[vindex++] = z/M_PI;
+
+            // Цвета
+            vertices[vindex++] = sin(theta) * cos(phi);
+            vertices[vindex++] = cos(theta);
+            vertices[vindex++] = sin(theta) * sin(phi);
+
+            // UV
+            float u = phi / (2 * M_PI);
+            float v = theta / M_PI;
+
+            vertices[vindex++] = u;
+            vertices[vindex++] = v;
         }
     }
 
@@ -42,12 +52,12 @@ void SphereMesh::init(int vslices, int hslices) {
             int v2 = (v + 1) * (hslices + 1) + h;
             int v3 = (v + 1) * (hslices + 1) + h + 1;
 
-            indices.push_back(v0);
-            indices.push_back(v1);
-            indices.push_back(v2);
-            indices.push_back(v2);
-            indices.push_back(v1);
-            indices.push_back(v3);
+            indices[iindex++] = v0;
+            indices[iindex++] = v1;
+            indices[iindex++] = v2;
+            indices[iindex++] = v2;
+            indices[iindex++] = v1;
+            indices[iindex++] = v3;
         }
     }
 
@@ -66,12 +76,16 @@ void SphereMesh::init(int vslices, int hslices) {
     glBufferData(GL_ELEMENT_ARRAY_BUFFER, indices.size() * sizeof(unsigned int), indices.data(), GL_STATIC_DRAW);
 
     // Положение
-    glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 6 * sizeof(float), (void*)0);
+    glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 8 * sizeof(float), (void*)0);
     glEnableVertexAttribArray(0);
 
     // Цвет
-    glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, 6 * sizeof(float), (void*)(3 * sizeof(float)));
+    glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, 8 * sizeof(float), (void*)(3 * sizeof(float)));
     glEnableVertexAttribArray(1);
+
+    // UV
+    glVertexAttribPointer(2, 2, GL_FLOAT, GL_FALSE, 8 * sizeof(float), (void*)(6 * sizeof(float)));
+    glEnableVertexAttribArray(2);
 
     glBindBuffer(GL_ARRAY_BUFFER, 0);
     glBindVertexArray(0);
@@ -85,6 +99,17 @@ SphereMesh::~SphereMesh() {
 
 void SphereMesh::draw(const Shader& shader) {
     glBindVertexArray(VAO);
+    if (texture && texture->isValid()) {
+        shader.setBool("useTexture", true);
+        shader.setInt("textureSampler", 0);
+        glActiveTexture(GL_TEXTURE0);
+        texture->bind();
+    } else {
+        shader.setBool("useTexture", false);
+    }
     glDrawElements(GL_TRIANGLES, indexSize, GL_UNSIGNED_INT, 0);
+    if (texture && texture->isValid()) {
+        Texture::unbind();
+    }
     glBindVertexArray(0);
 }

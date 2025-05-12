@@ -2,6 +2,7 @@
 #define MESH_H
 
 #include "Shader.h"
+#include "Texture.h"
 
 /// @brief Абстрактный класс для геометрических примитивов
 /// @details Предоставляет интерфейс для инициализации и отрисовки 3D объектов
@@ -19,5 +20,8 @@ public:
     /// @param shader Используемый шейдер
     /// @note Должен быть реализован в производных классах
     virtual void draw(const Shader& shader) = 0;
+
+    /// @brief Указатель на текстуру
+    Texture* texture = nullptr;
 };
 #endif

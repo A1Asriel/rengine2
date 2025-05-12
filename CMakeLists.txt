@@ -41,6 +41,7 @@ set(SOURCES
     src/RE_Window.cpp
     src/SceneLoader.cpp
     src/Camera.cpp
+    src/Texture.cpp
 )
 
 # Set include directories

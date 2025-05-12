@@ -5,6 +5,7 @@
 #include <vector>
 
 #include "Logging.h"
+#include "Texture.h"
 
 bool SceneLoader::load(const std::string& file, Scene* scene) {
     std::ifstream input(file);
@@ -25,7 +26,7 @@ bool SceneLoader::load(const std::string& file, Scene* scene) {
             tokens.push_back(token);
         }
 
-        if (tokens.size() != 10) {
+        if (tokens.size() < 10) {
             ERROR("Line \"" << line << "\" has incorrect amount of parameters");
             continue;
         }
@@ -47,6 +48,10 @@ bool SceneLoader::load(const std::string& file, Scene* scene) {
             node.scale.x = std::stof(tokens[7]);
             node.scale.y = std::stof(tokens[8]);
             node.scale.z = std::stof(tokens[9]);
+            if (tokens.size() >= 11 && !tokens[10].empty()) {
+                node.texturePath = tokens[10];
+                DEBUG("Loaded texture path: " << node.texturePath);
+            }
         } catch(const std::exception& e) {
             ERROR("Line \"" << line << "\" could not be interpreted");
             continue;
@@ -60,4 +65,6 @@ bool SceneLoader::load(const std::string& file, Scene* scene) {
 
 bool SceneLoader::save(const std::string& file, Scene* scene) {
     // TODO: To be implemented
+    ERROR("SceneLoader::save not implemented");
+    return false;
 }
