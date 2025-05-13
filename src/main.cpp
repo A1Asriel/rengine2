@@ -15,8 +15,8 @@ int main(int argc, char* argv[]) {
     }
 
     Scene* scene = new Scene();
-    if (!SceneLoader::load("scene.csv", scene)) {
-        if (!SceneLoader::load("../scene.csv", scene)) {
+    if (!SceneLoader::load("scene.rem", scene)) {
+        if (!SceneLoader::load("../scene.rem", scene)) {
             FATAL("Couldn't load the scene");
             delete re_window;
             return -1;

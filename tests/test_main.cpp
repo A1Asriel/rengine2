@@ -18,6 +18,7 @@
 TEST(SceneLoader, LoadScene) {
     const std::string fname = "test_scene.csv";
     std::ofstream f(fname);
+    f << "[RENGINE MAP FORMAT V1.0]\n";
     f << "camera,0,1,3,not working\n";
     f << "camera,0,1,3,a,b,c,d\n";
     f << "camera,0,0,0,0,0,0,45\n";
@@ -30,11 +31,31 @@ TEST(SceneLoader, LoadScene) {
     f.close();
 
     Scene scene;
-    EXPECT_TRUE(SceneLoader::load(fname, &scene));
+    ASSERT_TRUE(SceneLoader::load(fname, &scene));
     ASSERT_EQ(scene.nodes.size(), 2);
     EXPECT_EQ(scene.nodes[0].mesh, MeshType::Cube);
     EXPECT_EQ(scene.nodes[1].mesh, MeshType::Sphere);
 
+    std::remove(fname.c_str());
+}
+
+TEST(SceneLoader, InvalidScene) {
+    const std::string fname = "test_scene.csv";
+    std::ofstream f(fname);
+    f << "[RENGINE MAP FORMAT V2.0]\n";
+    f << "camera,0,1,3,not working\n";
+    f << "camera,0,1,3,a,b,c,d\n";
+    f << "camera,0,0,0,0,0,0,45\n";
+    f << "cube,0,0,0,0,0,0,1,1,1,false,uv-test.bmp\n";
+    f << "cube,7,8,9,0,0\n";
+    f << "sphere,1,2,3,0,0,0,2,2,2,false\n";
+    f << "notfound,4,5,6,0,0,0,3,3,3,false\n";
+    f << "\n";
+    f << "cube,10,11,12,0,a0,0,1,1,1,true\n";
+    f.close();
+
+    Scene scene;
+    ASSERT_FALSE(SceneLoader::load(fname, &scene));
     std::remove(fname.c_str());
 }
 

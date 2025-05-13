@@ -19,6 +19,13 @@ bool SceneLoader::load(const std::string& file, Scene* scene) {
     }
 
     std::string line;
+
+    std::getline(input, line);
+    if (line != "[RENGINE MAP FORMAT V1.0]") {
+        ERROR("Invalid file format");
+        return false;
+    }
+
     while (std::getline(input, line)) {
         std::istringstream iss(line);
         std::string token;
