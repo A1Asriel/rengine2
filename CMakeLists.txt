@@ -1,6 +1,34 @@
 cmake_minimum_required(VERSION 3.11)
 project(REngine)
 
+# Add LaTeX documentation support
+find_package(LATEX REQUIRED)
+
+# Add documentation target
+add_custom_target(
+    latex
+    COMMAND xelatex -interaction=nonstopmode -synctex=1 main.tex
+    COMMAND xelatex -interaction=nonstopmode -synctex=1 main.tex
+    WORKING_DIRECTORY ${CMAKE_SOURCE_DIR}/docs
+    COMMENT "Building LaTeX"
+    DEPENDS ${CMAKE_SOURCE_DIR}/docs/main.tex
+)
+
+# Add clean target for documentation
+add_custom_target(
+    latex-clean
+    COMMAND ${CMAKE_COMMAND} -E remove
+        ${CMAKE_SOURCE_DIR}/docs/main.pdf
+        ${CMAKE_SOURCE_DIR}/docs/main.aux
+        ${CMAKE_SOURCE_DIR}/docs/main.log
+        ${CMAKE_SOURCE_DIR}/docs/main.out
+        ${CMAKE_SOURCE_DIR}/docs/main.toc
+        ${CMAKE_SOURCE_DIR}/docs/main.lop
+        ${CMAKE_SOURCE_DIR}/docs/main.lpc
+        ${CMAKE_SOURCE_DIR}/docs/main.synctex.gz
+    COMMENT "Cleaning LaTeX"
+)
+
 include(FetchContent)
 
 FetchContent_Declare(
