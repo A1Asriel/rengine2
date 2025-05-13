@@ -5,7 +5,7 @@
 #include <glm/gtc/matrix_transform.hpp>
 
 Camera::Camera(int width, int height)
-    : position{0,0,3}, front{0,0,-1}, up{0,1,0}, pitch{0}, yaw{-90}, fov{60.0f}, w(width), h(height) {}
+    : position{0,0,3}, front{0,0,-1}, up{0,1,0}, fov{60.0f}, w(width), h(height) {}
 
 glm::mat4 Camera::getViewMatrix() const {
     return glm::lookAt(position, position + front, up);
@@ -33,10 +33,18 @@ void Camera::processKeyboard(float deltaTime, const Uint8* keystate) {
 
 void Camera::processMouse(int dx, int dy) {
     static const float limit = 89.0f;
-    pitch = glm::clamp(pitch - dy / 5.0f, -limit, limit);
+
+    float yaw = glm::degrees(atan2(front.z, front.x));
+    float pitch = glm::degrees(asin(front.y));
+
     yaw += dx / 5.0f;
-    front.x = cos(glm::radians(yaw)) * cos(glm::radians(pitch));
-    front.y = sin(glm::radians(pitch));
-    front.z = sin(glm::radians(yaw)) * cos(glm::radians(pitch));
+    pitch = glm::clamp(pitch - dy / 5.0f, -limit, limit);
+
+    float yawRad = glm::radians(yaw);
+    float pitchRad = glm::radians(pitch);
+
+    front.x = cos(yawRad) * cos(pitchRad);
+    front.y = sin(pitchRad);
+    front.z = sin(yawRad) * cos(pitchRad);
     front = glm::normalize(front);
 }

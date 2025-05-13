@@ -16,10 +16,6 @@ public:
     glm::vec3 front;
     /// @brief Вертикальный вектор камеры
     glm::vec3 up;
-    /// @brief Угол наклона камеры
-    float pitch;
-    /// @brief Угол поворота камеры
-    float yaw;
     /// @brief Поле зрения камеры
     float fov;
     /// @brief Ширина окна

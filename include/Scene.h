@@ -25,8 +25,20 @@ struct SceneNode {
     glm::vec3 rotation;
     /// @brief Масштаб объекта
     glm::vec3 scale;
+    /// @brief Искажение текстуры
+    bool distort = false;
     /// @brief Путь к текстуре
     std::string texturePath;
+};
+
+/// @brief Структура для хранения информации о камере
+struct CameraNode {
+    /// @brief Позиция камеры
+    glm::vec3 position;
+    /// @brief Поворот камеры
+    glm::vec3 rotation;
+    /// @brief Угол обзора камеры
+    float fov;
 };
 
 /// @brief Класс для управления сценой
@@ -35,6 +47,8 @@ class Scene {
 public:
     /// @brief Список объектов сцены
     std::vector<SceneNode> nodes;
+    /// @brief Камера
+    CameraNode camera;
 };
 
 #endif

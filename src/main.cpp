@@ -23,6 +23,14 @@ int main(int argc, char* argv[]) {
         }
     }
     re_window->scene = scene;
+    re_window->camera.position = scene->camera.position;
+    re_window->camera.front = glm::vec3(sin(glm::radians(scene->camera.rotation.y)),
+                                        sin(glm::radians(scene->camera.rotation.x)),
+                                        cos(glm::radians(scene->camera.rotation.y)));
+    re_window->camera.up = glm::vec3(sin(glm::radians(scene->camera.rotation.z)),
+                                     cos(glm::radians(scene->camera.rotation.z)),
+                                     0);
+    re_window->camera.fov = scene->camera.fov;
 
     Shader* shader;
     if (!std::filesystem::exists("shaders/vertex.glsl") || !std::filesystem::exists("shaders/fragment.glsl")) {

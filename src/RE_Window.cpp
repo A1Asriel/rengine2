@@ -94,6 +94,7 @@ void RE_Window::Draw(double deltaTime) {
     shader->use();
     shader->setMat4("view", camera.getViewMatrix());
     shader->setMat4("projection", camera.getProjectionMatrix());
+    shader->setFloat("u_time", SDL_GetTicks() / 1000.0f);
 
     for (const SceneNode node : scene->nodes) {
         glm::mat4 model = glm::mat4(1.0f);
@@ -103,6 +104,7 @@ void RE_Window::Draw(double deltaTime) {
         model = glm::rotate(model, glm::radians(node.rotation.z), glm::vec3(0.0f, 0.0f, 1.0f));
         model = glm::scale(model, node.scale);
         shader->setMat4("model", model);
+        shader->setBool("distort", node.distort);
         switch (node.mesh) {
         case MeshType::Cube: {
             CubeMesh* mesh = new CubeMesh();
