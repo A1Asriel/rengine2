@@ -4,7 +4,7 @@ project(REngine)
 # Add LaTeX documentation support
 find_package(LATEX)
 
-if(LATEX)
+if(${LATEX_FOUND})
     # Add documentation target
     add_custom_target(
         latex
@@ -14,7 +14,7 @@ if(LATEX)
         COMMENT "Building LaTeX"
         DEPENDS ${CMAKE_SOURCE_DIR}/docs/main.tex
     )
-    
+
     # Add clean target for documentation
     add_custom_target(
         latex-clean
@@ -28,7 +28,7 @@ if(LATEX)
             ${CMAKE_SOURCE_DIR}/docs/main.lpc
             ${CMAKE_SOURCE_DIR}/docs/main.synctex.gz
         COMMENT "Cleaning LaTeX"
-)
+    )
 endif()
 
 include(FetchContent)
