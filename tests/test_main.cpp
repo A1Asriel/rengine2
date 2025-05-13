@@ -18,20 +18,22 @@
 TEST(SceneLoader, LoadScene) {
     const std::string fname = "test_scene.csv";
     std::ofstream f(fname);
-    f << "cube,0,0,0,0,0,0,1,1,1\n";
+    f << "camera,0,1,3,not working\n";
+    f << "camera,0,1,3,a,b,c,d\n";
+    f << "camera,0,0,0,0,0,0,45\n";
+    f << "cube,0,0,0,0,0,0,1,1,1,false,uv-test.bmp\n";
     f << "cube,7,8,9,0,0\n";
-    f << "sphere,1,2,3,0,0,0,2,2,2\n";
-    f << "notfound,4,5,6,0,0,0,3,3,3\n";
+    f << "sphere,1,2,3,0,0,0,2,2,2,false\n";
+    f << "notfound,4,5,6,0,0,0,3,3,3,false\n";
     f << "\n";
-    f << "cube,10,11,12,0,a0,0,1,1,1\n";
+    f << "cube,10,11,12,0,a0,0,1,1,1,true\n";
     f.close();
 
     Scene scene;
     EXPECT_TRUE(SceneLoader::load(fname, &scene));
-    ASSERT_EQ(scene.nodes.size(), 3);
+    ASSERT_EQ(scene.nodes.size(), 2);
     EXPECT_EQ(scene.nodes[0].mesh, MeshType::Cube);
     EXPECT_EQ(scene.nodes[1].mesh, MeshType::Sphere);
-    EXPECT_EQ(scene.nodes[2].mesh, MeshType::NotImplemented);
 
     std::remove(fname.c_str());
 }
@@ -63,9 +65,14 @@ TEST(RE_Window, InitAndDraw) {
     ASSERT_TRUE(window->shader->isValid()) << "Shader initialization failed";
 
     Scene scene;
-    scene.nodes.push_back({MeshType::Cube, glm::vec3(0), glm::vec3(0), glm::vec3(1)});
-    scene.nodes.push_back({MeshType::Sphere, glm::vec3(1, 2, 3), glm::vec3(45, 0, 0), glm::vec3(2)});
-    scene.nodes.push_back({MeshType::NotImplemented, glm::vec3(1, 2, 3), glm::vec3(45, 0, 0), glm::vec3(2)});
+    scene.nodes.push_back({MeshType::Cube, glm::vec3(0), glm::vec3(0), glm::vec3(1), false});
+    scene.nodes.push_back({MeshType::Sphere, glm::vec3(1, 2, 3), glm::vec3(45, 0, 0), glm::vec3(2), false, "uv-test.bmp"});
+    scene.nodes.push_back({MeshType::Cube, glm::vec3(1, 2, 3), glm::vec3(45, 0, 0), glm::vec3(2), true, "uv-test.bmp"});
+    scene.nodes.push_back({MeshType::Cube, glm::vec3(1, 2, 3), glm::vec3(45, 0, 0), glm::vec3(2), true, "alpha.bmp"});
+    scene.nodes.push_back({MeshType::Cube, glm::vec3(1, 2, 3), glm::vec3(45, 0, 0), glm::vec3(2), true, "garbage.bmp"});
+    scene.nodes.push_back({MeshType::Cube, glm::vec3(1, 2, 3), glm::vec3(45, 0, 0), glm::vec3(2), true, "garbage_with_bm.bmp"});
+    scene.nodes.push_back({MeshType::Cube, glm::vec3(1, 2, 3), glm::vec3(45, 0, 0), glm::vec3(2), true, "16bit.bmp"});
+    scene.nodes.push_back({MeshType::Cube, glm::vec3(1, 2, 3), glm::vec3(45, 0, 0), glm::vec3(2), true, "not_real.bmp"});
     window->scene = &scene;
     window->Draw(0);
 
@@ -75,14 +82,14 @@ TEST(RE_Window, InitAndDraw) {
 
 TEST(Shader, Compilation) {
     const std::string vert_shader =
-        "#version 460 core\n"
+        "#version 330 core\n"
         "layout(location = 0) in vec3 aPos;\n"
         "void main() {\n"
         "    gl_Position = vec4(aPos, 1.0);\n"
         "}\n";
 
     const std::string frag_shader =
-        "#version 460 core\n"
+        "#version 330 core\n"
         "out vec4 FragColor;\n"
         "void main() {\n"
         "    FragColor = vec4(1.0, 0.0, 0.0, 1.0);\n"
@@ -160,11 +167,6 @@ TEST(Scene, Transformations) {
 }
 
 int main(int argc, char** argv) {
-    if (SDL_Init(SDL_INIT_VIDEO) < 0) {
-        fprintf(stderr, "SDL could not initialize! SDL_Error: %s\n", SDL_GetError());
-        return -1;
-    }
-
     ::testing::InitGoogleTest(&argc, argv);
     int result = RUN_ALL_TESTS();
 
