@@ -128,10 +128,10 @@ if(COVERAGE)
         )
 
         add_custom_target(coverage
-            DEPENDS clean_coverage
-            DEPENDS rengine
+            # DEPENDS clean_coverage
+            # DEPENDS rengine
             DEPENDS rengine_tests
-            COMMAND ${CMAKE_BINARY_DIR}/rengine${CMAKE_EXECUTABLE_SUFFIX}
+            # COMMAND ${CMAKE_BINARY_DIR}/rengine${CMAKE_EXECUTABLE_SUFFIX}
             COMMAND ${CMAKE_COMMAND} -E chdir ${CMAKE_BINARY_DIR} ${CMAKE_CTEST_COMMAND} --output-on-failure
             COMMAND ${CMAKE_COMMAND} -E make_directory "${CMAKE_BINARY_DIR}/coverage"
             COMMAND ${GCOVR} -r ${CMAKE_SOURCE_DIR} --html --html-details --exclude "${CMAKE_SOURCE_DIR}/build" --exclude "${CMAKE_SOURCE_DIR}/src/glad.c" -o ${CMAKE_BINARY_DIR}/coverage/index.html
