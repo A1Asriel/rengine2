@@ -1,10 +1,9 @@
 #ifndef CAMERA_H
 #define CAMERA_H
 
-#include <SDL_stdinc.h>
-
 #include <glm/glm.hpp>
 
+namespace REngine {
 /// @brief Класс для управления камерой
 /// @details Предоставляет функционал для управления камерой в 3D пространстве
 /// @note Использует glm для математических вычислений
@@ -36,15 +35,18 @@ public:
     /// @return glm::mat4 Матрица проекции
     glm::mat4 getProjectionMatrix() const;
 
-    /// @brief Обработка клавиатурного ввода
-    /// @param deltaTime Время между кадрами
-    /// @param keystate Состояние клавиш
-    void processKeyboard(float deltaTime, const Uint8* keystate);
-
-    /// @brief Обработка ввода мыши
+    /// @brief Относительное перемещение камеры
     /// @param dx Смещение по X
     /// @param dy Смещение по Y
-    void processMouse(int dx, int dy);
+    /// @param dz Смещение по Z
+    void moveRelative(float dx, float dy, float dz);
+
+    /// @brief Относительный поворот камеры
+    /// @param drx Поворот по X
+    /// @param dry Поворот по Y
+    /// @param drz Поворот по Z
+    void rotateRelative(int drx, int dry, int drz);
 };
+}
 
 #endif

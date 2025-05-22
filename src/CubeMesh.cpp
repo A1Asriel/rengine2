@@ -3,7 +3,7 @@
 #include <glm/gtc/matrix_transform.hpp>
 #include <vector>
 
-void CubeMesh::init() {
+void REngine::CubeMesh::init() {
     static const std::vector<float> vertices = {
         // Координаты
         -0.5f, -0.5f, -0.5f,  // 0
@@ -102,13 +102,13 @@ void CubeMesh::init() {
     glBindVertexArray(0);
 }
 
-CubeMesh::~CubeMesh() {
+REngine::CubeMesh::~CubeMesh() {
     glDeleteVertexArrays(1, &VAO);
     glDeleteBuffers(1, &VBO);
     glDeleteBuffers(1, &EBO);
 }
 
-void CubeMesh::draw(const Shader& shader) {
+void REngine::CubeMesh::draw(const Shader& shader) {
     glBindVertexArray(VAO);
     if (texture && texture->isValid()) {
         shader.setBool("useTexture", true);

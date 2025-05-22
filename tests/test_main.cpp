@@ -76,8 +76,8 @@ TEST(Camera, DefaultViewProjection) {
     EXPECT_NEAR(proj[0][0], f / (float(w) / float(h)), 1e-5f);
 }
 
-TEST(RE_Window, InitAndDraw) {
-    RE_Window* window = new RE_Window("Test Window", 640, 480);
+TEST(Renderer, InitAndDraw) {
+    Renderer* window = new Renderer("Test Window", 640, 480);
     ASSERT_EQ(window->Init(), 0) << "Window initialization failed";
     ASSERT_NE(window->getSDL_Window(), nullptr);
     ASSERT_NE(window->getSDL_GLContext(), nullptr);
@@ -176,8 +176,8 @@ TEST(Scene, Transformations) {
     EXPECT_EQ(scene.nodes[0].rotation, glm::vec3(45, 0, 0));
     EXPECT_EQ(scene.nodes[0].scale, glm::vec3(2));
     Camera cam(800, 600);
-    cam.processKeyboard(0.1f, SDL_GetKeyboardState(NULL));
-    cam.processMouse(10, 10);
+    cam.moveRelative(0.1f, SDL_GetKeyboardState(NULL));
+    cam.rotateRelative(10, 10, 10);
 
     glm::mat4 view = cam.getViewMatrix();
     glm::mat4 proj = cam.getProjectionMatrix();

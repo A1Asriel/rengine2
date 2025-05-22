@@ -7,7 +7,7 @@
 #include "Logging.h"
 #include "Texture.h"
 
-bool SceneLoader::load(const std::string& file, Scene* scene) {
+bool REngine::SceneLoader::load(const std::string& file, Scene* scene) {
     scene->nodes.clear();
     scene->camera.position = glm::vec3(0.0f);
     scene->camera.rotation = glm::vec3(0.0f);
@@ -98,7 +98,7 @@ bool SceneLoader::load(const std::string& file, Scene* scene) {
     return true;
 }
 
-bool SceneLoader::save(const std::string& file, Scene* scene) {
+bool REngine::SceneLoader::save(const std::string& file, Scene* scene) {
     // TODO: To be implemented
     ERROR("SceneLoader::save not implemented");
     return false;

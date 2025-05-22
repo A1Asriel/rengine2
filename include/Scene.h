@@ -5,6 +5,7 @@
 #include <string>
 #include <vector>
 
+namespace REngine {
 /// @brief Типы примитивов для отрисовки
 enum class MeshType {
     /// @brief Куб
@@ -50,5 +51,6 @@ public:
     /// @brief Камера
     CameraNode camera;
 };
+}
 
 #endif

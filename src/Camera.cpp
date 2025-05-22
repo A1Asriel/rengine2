@@ -1,44 +1,35 @@
 #include "Camera.h"
 
-#include <SDL2/SDL_scancode.h>
-
 #include <glm/gtc/matrix_transform.hpp>
 
-Camera::Camera(int width, int height)
+#include "Logging.h"
+
+REngine::Camera::Camera(int width, int height)
     : position{0,0,3}, front{0,0,-1}, up{0,1,0}, fov{60.0f}, w(width), h(height) {}
 
-glm::mat4 Camera::getViewMatrix() const {
+glm::mat4 REngine::Camera::getViewMatrix() const {
     return glm::lookAt(position, position + front, up);
 }
 
-glm::mat4 Camera::getProjectionMatrix() const {
+glm::mat4 REngine::Camera::getProjectionMatrix() const {
     return glm::perspective(glm::radians(fov),
                             float(w)/float(h), 0.1f, 100.0f);
 }
 
-void Camera::processKeyboard(float deltaTime, const Uint8* keystate) {
-    glm::vec3 viewPos(0.0f);
-
-    if (keystate[SDL_SCANCODE_W]) viewPos.z += deltaTime * (keystate[SDL_SCANCODE_LSHIFT]+1);
-    if (keystate[SDL_SCANCODE_A]) viewPos.x -= deltaTime * (keystate[SDL_SCANCODE_LSHIFT]+1);
-    if (keystate[SDL_SCANCODE_S]) viewPos.z -= deltaTime * (keystate[SDL_SCANCODE_LSHIFT]+1);
-    if (keystate[SDL_SCANCODE_D]) viewPos.x += deltaTime * (keystate[SDL_SCANCODE_LSHIFT]+1);
-    if (keystate[SDL_SCANCODE_LCTRL] || keystate[SDL_SCANCODE_RCTRL]) viewPos.y -= deltaTime * (keystate[SDL_SCANCODE_LSHIFT]+1);
-    if (keystate[SDL_SCANCODE_SPACE]) viewPos.y += deltaTime * (keystate[SDL_SCANCODE_LSHIFT]+1);
-
+void REngine::Camera::moveRelative(float dx, float dy, float dz) {
     glm::vec3 right = glm::normalize(glm::cross(front, up));
     glm::vec3 upDirection = glm::normalize(glm::cross(right, front));
-    position += viewPos.z * front + viewPos.x * right + viewPos.y * upDirection;
+    position += dz * front + dx * right + dy * upDirection;
 }
 
-void Camera::processMouse(int dx, int dy) {
+void REngine::Camera::rotateRelative(int drx, int dry, int drz) {
+    // TODO: Крен
     static const float limit = 89.0f;
-
     float yaw = glm::degrees(atan2(front.z, front.x));
     float pitch = glm::degrees(asin(front.y));
 
-    yaw += dx / 5.0f;
-    pitch = glm::clamp(pitch - dy / 5.0f, -limit, limit);
+    yaw += drx / 5.0f;
+    pitch = glm::clamp(pitch - dry / 5.0f, -limit, limit);
 
     float yawRad = glm::radians(yaw);
     float pitchRad = glm::radians(pitch);

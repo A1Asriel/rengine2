@@ -4,6 +4,7 @@
 #include "Shader.h"
 #include "Texture.h"
 
+namespace REngine {
 /// @brief Абстрактный класс для геометрических примитивов
 /// @details Предоставляет интерфейс для инициализации и отрисовки 3D объектов
 class Mesh {
@@ -24,4 +25,6 @@ public:
     /// @brief Указатель на текстуру
     Texture* texture = nullptr;
 };
+}
+
 #endif

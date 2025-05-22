@@ -3,6 +3,7 @@
 
 #include "Mesh.h"
 
+namespace REngine {
 /// @brief Класс для отрисовки сферы
 /// @details Наследуется от базового класса Mesh и реализует отрисовку сферы
 class SphereMesh : public Mesh {
@@ -32,5 +33,6 @@ private:
     /// @brief Количество индексов
     unsigned int indexSize;
 };
+}
 
 #endif

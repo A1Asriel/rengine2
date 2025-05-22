@@ -6,27 +6,27 @@
 #include "Texture.h"
 #include "Logging.h"
 
-std::unordered_map<std::string, Texture*> Texture::textures;
+std::unordered_map<std::string, REngine::Texture*> REngine::Texture::textures;
 
-Texture::Texture() : textureID(0), width(0), height(0), bpp(0) {
+REngine::Texture::Texture() : textureID(0), width(0), height(0), bpp(0) {
 }
 
-Texture::Texture(const std::string& path) : textureID(0), width(0), height(0), bpp(0) {
+REngine::Texture::Texture(const std::string& path) : textureID(0), width(0), height(0), bpp(0) {
     loadBMP(path);
 }
 
-Texture::~Texture() {
+REngine::Texture::~Texture() {
     clear();
 }
 
-void Texture::clear() {
+void REngine::Texture::clear() {
     if (textureID != 0) {
         glDeleteTextures(1, &textureID);
         textureID = 0;
     }
 }
 
-bool Texture::loadBMP(const std::string& path) {
+bool REngine::Texture::loadBMP(const std::string& path) {
     clear();
 
     std::ifstream file(path, std::ios::binary);
@@ -106,10 +106,10 @@ bool Texture::loadBMP(const std::string& path) {
     return true;
 }
 
-void Texture::bind() const {
+void REngine::Texture::bind() const {
     glBindTexture(GL_TEXTURE_2D, textureID);
 }
 
-void Texture::unbind() {
+void REngine::Texture::unbind() {
     glBindTexture(GL_TEXTURE_2D, 0);
 }

@@ -8,7 +8,7 @@
 
 #include "Logging.h"
 
-Shader::Shader(const char* vertexPath, const char* fragmentPath) {
+REngine::Shader::Shader(const char* vertexPath, const char* fragmentPath) {
     std::string vertexCode;
     std::string fragmentCode;
     std::ifstream vShaderFile;
@@ -17,44 +17,18 @@ Shader::Shader(const char* vertexPath, const char* fragmentPath) {
     vShaderFile.exceptions(std::ifstream::failbit | std::ifstream::badbit);
     fShaderFile.exceptions(std::ifstream::failbit | std::ifstream::badbit);
 
-    try {
-        vShaderFile.open(vertexPath);
-        fShaderFile.open(fragmentPath);
-        std::stringstream vShaderStream, fShaderStream;
+    vShaderFile.open(vertexPath);
+    fShaderFile.open(fragmentPath);
+    std::stringstream vShaderStream, fShaderStream;
 
-        vShaderStream << vShaderFile.rdbuf();
-        fShaderStream << fShaderFile.rdbuf();
+    vShaderStream << vShaderFile.rdbuf();
+    fShaderStream << fShaderFile.rdbuf();
 
-        vShaderFile.close();
-        fShaderFile.close();
+    vShaderFile.close();
+    fShaderFile.close();
 
-        vertexCode = vShaderStream.str();
-        fragmentCode = fShaderStream.str();
-    } catch(std::ifstream::failure& e) {
-        ERROR("Couldn't read shader: " << e.what());
-        // Откат к стандартному шейдеру
-        vertexCode =   "#version 460 core\n"
-                       "layout (location = 0) in vec3 aPos;\n"
-                       "layout (location = 1) in vec3 aColor;\n"
-                       "out vec3 ourColor;\n"
-                       "uniform mat4 model;\n"
-                       "uniform mat4 view;\n"
-                       "uniform mat4 projection;\n"
-                       "void main() {\n"
-                       "    gl_Position = projection * view * model * vec4(aPos, 1.0);\n"
-                       "    ourColor = aColor;\n"
-                       "}\n";
-
-        fragmentCode = "#version 460 core\n"
-                       "in vec3 ourColor;\n"
-                       "out vec4 FragColor;\n"
-                       "void main() {\n"
-                       "    if (!gl_FrontFacing)\n"
-                       "        FragColor = vec4(ourColor, 1.0);\n"
-                       "    else\n"
-                       "        discard;\n"
-                       "}\n";
-    }
+    vertexCode = vShaderStream.str();
+    fragmentCode = fShaderStream.str();
 
     const char* vShaderCode = vertexCode.c_str();
     const char* fShaderCode = fragmentCode.c_str();
@@ -81,31 +55,31 @@ Shader::Shader(const char* vertexPath, const char* fragmentPath) {
     glDeleteShader(fragment);
 }
 
-void Shader::use() {
+void REngine::Shader::use() {
     glUseProgram(ID);
 }
 
-void Shader::setBool(const std::string &name, bool value) const {
+void REngine::Shader::setBool(const std::string &name, bool value) const {
     glUniform1i(glGetUniformLocation(ID, name.c_str()), (int)value);
 }
 
-void Shader::setInt(const std::string &name, int value) const {
+void REngine::Shader::setInt(const std::string &name, int value) const {
     glUniform1i(glGetUniformLocation(ID, name.c_str()), value);
 }
 
-void Shader::setFloat(const std::string &name, float value) const {
+void REngine::Shader::setFloat(const std::string &name, float value) const {
     glUniform1f(glGetUniformLocation(ID, name.c_str()), value);
 }
 
-void Shader::setMat4(const std::string &name, const glm::mat4 &mat) const {
+void REngine::Shader::setMat4(const std::string &name, const glm::mat4 &mat) const {
     glUniformMatrix4fv(glGetUniformLocation(ID, name.c_str()), 1, GL_FALSE, glm::value_ptr(mat));
 }
 
-void Shader::setVec3(const std::string &name, const glm::vec3 &value) const {
+void REngine::Shader::setVec3(const std::string &name, const glm::vec3 &value) const {
     glUniform3fv(glGetUniformLocation(ID, name.c_str()), 1, glm::value_ptr(value));
 }
 
-void Shader::checkCompileErrors(unsigned int shader, std::string type) {
+void REngine::Shader::checkCompileErrors(unsigned int shader, std::string type) {
     int success;
     char infoLog[1024];
     if (type != "PROGRAM") {

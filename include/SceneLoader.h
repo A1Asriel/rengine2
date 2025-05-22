@@ -3,6 +3,7 @@
 
 #include "Scene.h"
 
+namespace REngine {
 /// @brief Класс для загрузки и сохранения сцен
 /// @details Предоставляет статические методы для работы с файлами сцены
 class SceneLoader {
@@ -19,5 +20,6 @@ public:
     /// @return true при успешном сохранении, false в противном случае
     static bool save(const std::string& file, Scene* scene);
 };
+}
 
 #endif

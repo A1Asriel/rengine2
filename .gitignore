@@ -79,4 +79,4 @@ build.ninja
 
 #############
 
-sdl2-mingw/x86_64-w64-mingw32
+install/

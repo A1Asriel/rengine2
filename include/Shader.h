@@ -4,6 +4,7 @@
 #include <glm/glm.hpp>
 #include <string>
 
+namespace REngine {
 /// @brief Класс для работы с шейдерами
 /// @details Предоставляет функционал для загрузки и использования шейдерных программ
 class Shader {
@@ -54,5 +55,6 @@ private:
     /// @param type Тип шейдера
     void checkCompileErrors(unsigned int shader, std::string type);
 };
+}
 
 #endif

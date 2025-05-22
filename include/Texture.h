@@ -5,6 +5,7 @@
 #include <cstdint>
 #include <unordered_map>
 
+namespace REngine {
 /// @brief Заголовок файла BMP
 struct BMPFileHeader {
     uint16_t signature;      // Сигнатура файла
@@ -83,5 +84,6 @@ private:
     /// @brief Очистка текстуры
     void clear();
 };
+}
 
 #endif

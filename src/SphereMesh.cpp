@@ -4,11 +4,11 @@
 #include <vector>
 #include <math.h>
 
-void SphereMesh::init() {
+void REngine::SphereMesh::init() {
     init(10, 10);
 }
 
-void SphereMesh::init(int vslices, int hslices) {
+void REngine::SphereMesh::init(int vslices, int hslices) {
     std::vector<float> vertices((vslices + 1) * (hslices + 1) * 8);
     std::vector<unsigned> indices(vslices * hslices * 6);
 
@@ -91,13 +91,13 @@ void SphereMesh::init(int vslices, int hslices) {
     glBindVertexArray(0);
 }
 
-SphereMesh::~SphereMesh() {
+REngine::SphereMesh::~SphereMesh() {
     glDeleteVertexArrays(1, &VAO);
     glDeleteBuffers(1, &VBO);
     glDeleteBuffers(1, &EBO);
 }
 
-void SphereMesh::draw(const Shader& shader) {
+void REngine::SphereMesh::draw(const Shader& shader) {
     glBindVertexArray(VAO);
     if (texture && texture->isValid()) {
         shader.setBool("useTexture", true);

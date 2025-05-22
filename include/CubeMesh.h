@@ -3,6 +3,7 @@
 
 #include "Mesh.h"
 
+namespace REngine {
 /// @brief Класс для отрисовки куба
 /// @details Наследуется от базового класса Mesh и реализует отрисовку куба
 class CubeMesh : public Mesh {
@@ -25,5 +26,6 @@ private:
     /// @brief Element Buffer Object
     unsigned int EBO;
 };
+}
 
 #endif
