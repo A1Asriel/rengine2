@@ -1,16 +1,11 @@
 #include "SphereMesh.h"
 #include <glad/glad.h>
 #include <glm/gtc/matrix_transform.hpp>
-#include <vector>
 #include <math.h>
 
-void REngine::SphereMesh::init() {
-    init(10, 10);
-}
-
-void REngine::SphereMesh::init(int vslices, int hslices) {
-    std::vector<float> vertices((vslices + 1) * (hslices + 1) * 8);
-    std::vector<unsigned> indices(vslices * hslices * 6);
+REngine::SphereMesh::SphereMesh(int vslices, int hslices) {
+    float vertices[(vslices + 1) * (hslices + 1) * 8];
+    unsigned indices[vslices * hslices * 6];
 
     int vindex = 0;
     int iindex = 0;
@@ -61,7 +56,7 @@ void REngine::SphereMesh::init(int vslices, int hslices) {
         }
     }
 
-    indexSize = indices.size();
+    indexSize = vslices * hslices * 6;
 
     glGenVertexArrays(1, &VAO);
     glGenBuffers(1, &VBO);
@@ -70,10 +65,10 @@ void REngine::SphereMesh::init(int vslices, int hslices) {
     glBindVertexArray(VAO);
 
     glBindBuffer(GL_ARRAY_BUFFER, VBO);
-    glBufferData(GL_ARRAY_BUFFER, vertices.size() * sizeof(float), vertices.data(), GL_STATIC_DRAW);
+    glBufferData(GL_ARRAY_BUFFER, sizeof(vertices), vertices, GL_STATIC_DRAW);
 
     glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, EBO);
-    glBufferData(GL_ELEMENT_ARRAY_BUFFER, indices.size() * sizeof(unsigned int), indices.data(), GL_STATIC_DRAW);
+    glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof(indices), indices, GL_STATIC_DRAW);
 
     // Положение
     glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 8 * sizeof(float), (void*)0);

@@ -1,77 +1,87 @@
 #include "CubeMesh.h"
 #include <glad/glad.h>
 #include <glm/gtc/matrix_transform.hpp>
-#include <vector>
 
-void REngine::CubeMesh::init() {
-    static const std::vector<float> vertices = {
-        // Координаты
-        -0.5f, -0.5f, -0.5f,  // 0
-        // Цвета
-        1.0f, 0.0f, 0.0f,
-        // UV
-        0.25f, 0.5f,
+REngine::CubeMesh::CubeMesh() {
+    static const float vertices[] = {
+        // 0
+        -0.5f, -0.5f, -0.5f,  // Координаты
+        1.0f, 0.0f, 0.0f,     // Цвета
+        0.25f, 0.5f,          // UV
 
-        -0.5f, 0.5f, -0.5f,  // 1
+        // 1
+        -0.5f, 0.5f, -0.5f,
         0.0f, 1.0f, 0.0f,
         0.25f, 0.75f,
 
-        0.5f, 0.5f, -0.5f,  // 2
+        // 2
+        0.5f, 0.5f, -0.5f,
         0.0f, 0.0f, 1.0f,
         0.5f, 0.75f,
 
-        0.5f, -0.5f, -0.5f,  // 3
+        // 3
+        0.5f, -0.5f, -0.5f,
         1.0f, 1.0f, 0.0f,
         0.5f, 0.5f,
 
-        -0.5f, -0.5f, 0.5f,  // 4
+        // 4
+        -0.5f, -0.5f, 0.5f,
         1.0f, 0.0f, 1.0f,
         1.0f, 0.5f,
 
-        -0.5f, 0.5f, 0.5f,  // 5
+        // 5
+        -0.5f, 0.5f, 0.5f,
         0.0f, 1.0f, 1.0f,
         1.0f, 0.75f,
 
-        0.5f, 0.5f, 0.5f,  // 6
+        // 6
+        0.5f, 0.5f, 0.5f,
         1.0f, 1.0f, 1.0f,
         0.75f, 0.75f,
 
-        0.5f, -0.5f, 0.5f,  // 7
+        // 7
+        0.5f, -0.5f, 0.5f,
         0.5f, 0.5f, 0.5f,
         0.75f, 0.5f,
 
-        -0.5f, 0.5f, 0.5f,  // 8
+        // 8
+        -0.5f, 0.5f, 0.5f,
         0.0f, 1.0f, 1.0f,
         0.0f, 0.75f,
 
-        -0.5f, -0.5f, 0.5f,  // 9
+        // 9
+        -0.5f, -0.5f, 0.5f,
         1.0f, 0.0f, 1.0f,
         0.0f, 0.5f,
 
-        -0.5f, 0.5f, 0.5f,  // 10
+        // 10
+        -0.5f, 0.5f, 0.5f,
         0.0f, 1.0f, 1.0f,
         0.25f, 1.0f,
 
-        0.5f, 0.5f, 0.5f,  // 11
+        // 11
+        0.5f, 0.5f, 0.5f,
         1.0f, 1.0f, 1.0f,
         0.5f, 1.0f,
 
-        -0.5f, -0.5f, 0.5f,  // 12
+        // 12
+        -0.5f, -0.5f, 0.5f,
         1.0f, 0.0f, 1.0f,
         0.25f, 0.25f,
 
-        0.5f, -0.5f, 0.5f,  // 13
+        // 13
+        0.5f, -0.5f, 0.5f,
         0.5f, 0.5f, 0.5f,
         0.5f, 0.25f
     };
 
-    static const std::vector<unsigned> indices = {
-        0, 1, 2, 2, 3, 0,  // ф
-        3, 2, 6, 6, 7, 3,  // п
-        7, 6, 5, 5, 4, 7,  // т
-        9, 8, 1, 1, 0, 9,  // л
-        1, 10, 11, 11, 2, 1,  // в
-        12, 0, 3, 3, 13, 12  // н
+    static const unsigned indices[] = {
+        0, 1, 2, 2, 3, 0,     // Фронт
+        3, 2, 6, 6, 7, 3,     // Право
+        7, 6, 5, 5, 4, 7,     // Тыл
+        9, 8, 1, 1, 0, 9,     // Лево
+        1, 10, 11, 11, 2, 1,  // Верх
+        12, 0, 3, 3, 13, 12   // Низ
     };
 
     glGenVertexArrays(1, &VAO);
@@ -81,10 +91,10 @@ void REngine::CubeMesh::init() {
     glBindVertexArray(VAO);
 
     glBindBuffer(GL_ARRAY_BUFFER, VBO);
-    glBufferData(GL_ARRAY_BUFFER, vertices.size() * sizeof(float), vertices.data(), GL_STATIC_DRAW);
+    glBufferData(GL_ARRAY_BUFFER, sizeof(vertices), vertices, GL_STATIC_DRAW);
 
     glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, EBO);
-    glBufferData(GL_ELEMENT_ARRAY_BUFFER, indices.size() * sizeof(unsigned int), indices.data(), GL_STATIC_DRAW);
+    glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof(indices), indices, GL_STATIC_DRAW);
 
     // Положение
     glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 8 * sizeof(float), (void*)0);

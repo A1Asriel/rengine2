@@ -4,6 +4,7 @@
 #include <glm/glm.hpp>
 #include <string>
 #include <vector>
+#include "Mesh.h"
 
 namespace REngine {
 /// @brief Типы примитивов для отрисовки
@@ -12,14 +13,14 @@ enum class MeshType {
     Cube,
     /// @brief Сфера
     Sphere,
-    /// @brief Не реализованный тип
-    NotImplemented
+    /// @brief Пользовательский объект
+    Custom
 };
 
 /// @brief Структура для хранения информации о сценном объекте
 struct SceneNode {
-    /// @brief Тип примитива
-    MeshType mesh;
+    /// @brief Указатель на объект
+    Mesh* mesh;
     /// @brief Позиция объекта
     glm::vec3 position;
     /// @brief Поворот объекта

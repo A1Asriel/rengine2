@@ -12,8 +12,7 @@ public:
     ~CubeMesh();
 
     /// @brief Инициализация куба
-    /// @details Создает VAO, VBO и EBO для отрисовки куба
-    void init() override;
+    CubeMesh();
 
     /// @brief Отрисовка куба
     /// @param shader Используемый шейдер

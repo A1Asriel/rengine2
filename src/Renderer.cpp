@@ -12,8 +12,8 @@
 
 void applyTexture(REngine::Mesh* mesh, std::string texturePath);
 
-REngine::Renderer::Renderer(std::string title, int width, int height)
-    : title(title), width(width), height(height), camera(width, height) {}
+REngine::Renderer::Renderer(int width, int height)
+    : width(width), height(height), camera(width, height) {}
 
 int REngine::Renderer::Init(GLADloadproc procAddress) {
     if (!gladLoadGLLoader(procAddress)) {
@@ -50,34 +50,9 @@ void REngine::Renderer::Draw(unsigned long ticks) {
         model = glm::scale(model, node.scale);
         shader->setMat4("model", model);
         shader->setBool("distort", node.distort);
-        switch (node.mesh) {
-        case MeshType::Cube: {
-            CubeMesh* mesh = new CubeMesh();
-            applyTexture(mesh, node.texturePath);
-            mesh->init();
-            mesh->draw(*shader);
-            delete mesh;
-            break;
-        }
-        case MeshType::Sphere: {
-            SphereMesh* mesh = new SphereMesh();
-            applyTexture(mesh, node.texturePath);
-            mesh->init();
-            mesh->draw(*shader);
-            delete mesh;
-            break;
-        }
-        default: {
-            ERROR("Mesh type not yet implemented");
-            break;
-        }
-        }
+        applyTexture(node.mesh, node.texturePath);
+        node.mesh->draw(*shader);
     }
-
-    // Удалить нереализованные объекты из сцены
-    scene->nodes.erase(std::remove_if(scene->nodes.begin(), scene->nodes.end(), [&](SceneNode node) {
-        return node.mesh == MeshType::NotImplemented;
-    }), scene->nodes.end());
 }
 
 void applyTexture(REngine::Mesh* mesh, std::string texturePath) {

@@ -11,14 +11,11 @@ public:
     /// @brief Деструктор сферы
     ~SphereMesh();
 
-    /// @brief Инициализация сферы с параметрами по умолчанию
-    /// @details Создает VAO, VBO и EBO для отрисовки сферы
-    void init() override;
-
     /// @brief Инициализация сферы с заданным количеством сегментов
     /// @param vslices Количество вертикальных сегментов
     /// @param hslices Количество горизонтальных сегментов
-    void init(int vslices, int hslices);
+    /// @details Создает VAO, VBO и EBO для отрисовки сферы
+    SphereMesh(int vslices = 10, int hslices = 10);
 
     /// @brief Отрисовка сферы
     /// @param shader Используемый шейдер

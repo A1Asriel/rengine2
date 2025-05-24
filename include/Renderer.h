@@ -15,14 +15,11 @@ private:
     int width;
     /// @brief Высота окна
     int height;
-    /// @brief Заголовок окна
-    std::string title;
 public:
-    /// @brief Конструктор окна
-    /// @param title Заголовок окна
+    /// @brief Конструктор движка
     /// @param width Ширина окна
     /// @param height Высота окна
-    Renderer(std::string title, int width, int height);
+    Renderer(int width, int height);
 
     /// @brief Указатель на шейдер для рендеринга
     Shader* shader;
