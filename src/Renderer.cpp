@@ -33,7 +33,7 @@ int REngine::Renderer::Init(GLADloadproc procAddress) {
 }
 
 void REngine::Renderer::Draw(unsigned long ticks) {
-    glClearColor(0.63f, 0.63f, 0.85f, 1.0f);
+    glClearColor(scene.skyColor.x, scene.skyColor.y, scene.skyColor.z, 1.0f);
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
     shader->use();
@@ -42,7 +42,7 @@ void REngine::Renderer::Draw(unsigned long ticks) {
     shader->setFloat("u_time", ticks / 1000.0f);
     shader->setVec3("u_light_color", scene.lightingColor);
     shader->setVec3("u_light_position", scene.lightingPosition);
-    shader->setFloat("u_ambient_strength", scene.ambientStrength);
+    shader->setVec3("u_camera_position", camera.position);
 
     for (const SceneNode node : scene.nodes) {
         glm::mat4 model = glm::mat4(1.0f);
@@ -54,7 +54,10 @@ void REngine::Renderer::Draw(unsigned long ticks) {
         shader->setMat4("model", model);
         shader->setMat4("normalMatrix", glm::transpose(glm::inverse(model)));
         shader->setBool("distort", node.distort);
-        shader->setVec3("cameraPos", camera.position);
+        shader->setVec3("material.ambient", node.ambient);
+        shader->setVec3("material.diffuse", node.diffuse);
+        shader->setVec3("material.specular", node.specular);
+        shader->setFloat("material.shininess", node.shininess);
         applyTexture(node.mesh, node.texturePath);
         node.mesh->draw(*shader);
     }
@@ -77,5 +80,7 @@ void applyTexture(REngine::Mesh* mesh, std::string texturePath) {
         mesh->texture = tex;
     } else {
         ERROR("Failed to load texture: " + texturePath);
+        delete tex;
+        REngine::Texture::textures[texturePath] = nullptr;
     }
 }

@@ -68,8 +68,14 @@ uniform bool distort;
 uniform float u_time;
 uniform vec3 u_light_color;
 uniform vec3 u_light_position;
-uniform float u_ambient_strength;
-uniform vec3 cameraPos;
+uniform vec3 u_camera_position;
+struct Material {
+    vec3 ambient;
+    vec3 diffuse;
+    vec3 specular;
+    float shininess;
+};
+uniform Material material;
 
 
 vec3 random3(vec3 p) {
@@ -88,7 +94,7 @@ float noise(vec3 p) {
     f = f*f*(3.0-2.0*f);
 
     return mix(
-        mix(mix(dot(random3(i), f),
+        mix(mix(dot(random3(i), f), 
                 dot(random3(i + vec3(1.0,0.0,0.0)),f - vec3(1.0,0.0,0.0)),f.x),
             mix(dot(random3(i + vec3(0.0,1.0,0.0)),f - vec3(0.0,1.0,0.0)),
                 dot(random3(i + vec3(1.0,1.0,0.0)),f - vec3(1.0,1.0,0.0)),f.x),f.y),
@@ -131,18 +137,17 @@ void main() {
         texColor = vec4(1.0, 1.0, 1.0, 1.0);
     }
 
-    vec3 ambient = u_ambient_strength * u_light_color;
+    vec3 ambient = u_light_color * material.ambient;
 
     vec3 norm = normalize(Normal);
     vec3 light_direction = normalize(u_light_position - FragPos);
     float diff = max(dot(norm, light_direction), 0.0);
-    vec3 diffuse = diff * u_light_color;
+    vec3 diffuse = u_light_color * (diff * material.diffuse);
 
-    float specularStrength = 0.5;
-    vec3 viewDir = normalize(cameraPos - FragPos);
+    vec3 viewDir = normalize(u_camera_position - FragPos);
     vec3 reflectDir = reflect(-light_direction, norm);
-    float spec = pow(max(dot(viewDir, reflectDir), 0.0), 32);
-    vec3 specular = specularStrength * spec * u_light_color;
+    float spec = pow(max(dot(viewDir, reflectDir), 0.0), material.shininess);
+    vec3 specular = u_light_color * (spec * material.specular);
 
     FragColor = texColor * vec4(ambient + diffuse + specular, 1.0);
 }
