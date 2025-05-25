@@ -14,8 +14,9 @@ public:
     
     /// @brief Конструктор шейдера
     /// @param vertexPath Путь к вершинному шейдеру
-    /// @param fragmentPath Путь к фрагментному шейдеру
-    Shader(const char* vertexPath, const char* fragmentPath);
+    /// @param fragmentPath Путь к фрагментному 
+    /// @note Если пути не указаны, будут использованы встроенные шейдеры
+    Shader(const char* vertexPath = NULL, const char* fragmentPath = NULL);
     
     /// @brief Активация шейдера
     void use();

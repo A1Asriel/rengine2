@@ -26,10 +26,10 @@ REngine::SphereMesh::SphereMesh(int vslices, int hslices) {
             vertices[vindex++] = y/M_PI;
             vertices[vindex++] = z/M_PI;
 
-            // Цвета
-            vertices[vindex++] = sin(theta) * cos(phi);
-            vertices[vindex++] = cos(theta);
-            vertices[vindex++] = sin(theta) * sin(phi);
+            // Нормали
+            vertices[vindex++] = x;
+            vertices[vindex++] = y;
+            vertices[vindex++] = z;
 
             // UV
             float u = phi / (2 * M_PI);
@@ -74,7 +74,7 @@ REngine::SphereMesh::SphereMesh(int vslices, int hslices) {
     glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 8 * sizeof(float), (void*)0);
     glEnableVertexAttribArray(0);
 
-    // Цвет
+    // Нормали
     glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, 8 * sizeof(float), (void*)(3 * sizeof(float)));
     glEnableVertexAttribArray(1);
 

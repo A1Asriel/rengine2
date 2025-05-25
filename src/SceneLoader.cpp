@@ -11,9 +11,6 @@
 
 bool REngine::SceneLoader::load(const std::string& file, Scene* scene) {
     scene->nodes.clear();
-    scene->camera.position = glm::vec3(0.0f);
-    scene->camera.rotation = glm::vec3(0.0f);
-    scene->camera.fov = 45.0f;
 
     std::ifstream input(file);
     if (!input.is_open()) {
@@ -40,7 +37,6 @@ bool REngine::SceneLoader::load(const std::string& file, Scene* scene) {
             tokens.push_back(token);
         }
 
-        SceneNode node;
         if (tokens[0] == "camera") {
             if (tokens.size() < 8) {
                 ERROR("Line \"" << line << "\" has incorrect amount of parameters");
@@ -50,15 +46,35 @@ bool REngine::SceneLoader::load(const std::string& file, Scene* scene) {
                 scene->camera.position.x = std::stof(tokens[1]);
                 scene->camera.position.y = std::stof(tokens[2]);
                 scene->camera.position.z = std::stof(tokens[3]);
+                DEBUG("Loaded camera position: " << scene->camera.position.x << ", " << scene->camera.position.y << ", " << scene->camera.position.z);
                 scene->camera.rotation.x = std::stof(tokens[4]);
                 scene->camera.rotation.y = std::stof(tokens[5]);
                 scene->camera.rotation.z = std::stof(tokens[6]);
+                DEBUG("Loaded camera rotation: " << scene->camera.rotation.x << ", " << scene->camera.rotation.y << ", " << scene->camera.rotation.z);
                 scene->camera.fov = std::stof(tokens[7]);
+                DEBUG("Loaded camera fov: " << scene->camera.fov);
             } catch(const std::exception& e) {
                 ERROR("Line \"" << line << "\" could not be interpreted");
-                scene->camera.position = glm::vec3(0.0f);
-                scene->camera.rotation = glm::vec3(0.0f);
-                scene->camera.fov = 45.0f;
+                continue;
+            }
+        } else if (tokens[0] == "lighting") {
+            if (tokens.size() < 8) {
+                ERROR("Line \"" << line << "\" has incorrect amount of parameters");
+                continue;
+            }
+            try {
+                scene->lightingColor.x = std::stof(tokens[1]);
+                scene->lightingColor.y = std::stof(tokens[2]);
+                scene->lightingColor.z = std::stof(tokens[3]);
+                DEBUG("Loaded lighting color: " << scene->lightingColor.x << ", " << scene->lightingColor.y << ", " << scene->lightingColor.z);
+                scene->lightingPosition.x = std::stof(tokens[4]);
+                scene->lightingPosition.y = std::stof(tokens[5]);
+                scene->lightingPosition.z = std::stof(tokens[6]);
+                DEBUG("Loaded lighting position: " << scene->lightingPosition.x << ", " << scene->lightingPosition.y << ", " << scene->lightingPosition.z);
+                scene->ambientStrength = std::stof(tokens[7]);
+                DEBUG("Loaded ambient strength: " << scene->ambientStrength);
+            } catch(const std::exception& e) {
+                ERROR("Line \"" << line << "\" could not be interpreted");
                 continue;
             }
         } else {
@@ -66,6 +82,7 @@ bool REngine::SceneLoader::load(const std::string& file, Scene* scene) {
                 ERROR("Line \"" << line << "\" has incorrect amount of parameters");
                 continue;
             }
+            SceneNode node;
             if (tokens[0] == "cube")
                 node.mesh = (Mesh*)new CubeMesh();
             else if (tokens[0] == "sphere")
@@ -78,13 +95,17 @@ bool REngine::SceneLoader::load(const std::string& file, Scene* scene) {
                 node.position.x = std::stof(tokens[1]);
                 node.position.y = std::stof(tokens[2]);
                 node.position.z = std::stof(tokens[3]);
+                DEBUG("Loaded node position: " << node.position.x << ", " << node.position.y << ", " << node.position.z);
                 node.rotation.x = std::stof(tokens[4]);
                 node.rotation.y = std::stof(tokens[5]);
                 node.rotation.z = std::stof(tokens[6]);
+                DEBUG("Loaded node rotation: " << node.rotation.x << ", " << node.rotation.y << ", " << node.rotation.z);
                 node.scale.x = std::stof(tokens[7]);
                 node.scale.y = std::stof(tokens[8]);
                 node.scale.z = std::stof(tokens[9]);
+                DEBUG("Loaded node scale: " << node.scale.x << ", " << node.scale.y << ", " << node.scale.z);
                 node.distort = tokens[10] == "true";
+                DEBUG("Loaded node distort: " << node.distort);
                 if (tokens.size() >= 12 && !tokens[11].empty()) {
                     node.texturePath = tokens[11];
                     DEBUG("Loaded texture path: " << node.texturePath);

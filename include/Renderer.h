@@ -23,8 +23,8 @@ public:
 
     /// @brief Указатель на шейдер для рендеринга
     Shader* shader;
-    /// @brief Указатель на сцену для рендеринга
-    Scene* scene;
+    /// @brief Сцена для рендеринга
+    Scene scene;
     /// @brief Камера для просмотра сцены
     Camera camera;
 
