@@ -19,6 +19,8 @@ public:
 
     /// @brief Указатель на текстуру
     Texture* texture = nullptr;
+    /// @brief Указатель на текстуру отражений
+    Texture* specularTexture = nullptr;
 };
 }
 

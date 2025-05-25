@@ -89,14 +89,25 @@ void REngine::CubeMesh::draw(const Shader& shader) {
     glBindVertexArray(VAO);
     if (texture && texture->isValid()) {
         shader.setBool("useTexture", true);
-        shader.setInt("textureSampler", 0);
+        shader.setInt("material.diffuse", 0);
         glActiveTexture(GL_TEXTURE0);
         texture->bind();
     } else {
         shader.setBool("useTexture", false);
     }
+    if (specularTexture && specularTexture->isValid()) {
+        shader.setBool("useSpecularTexture", true);
+        shader.setInt("material.specular", 1);
+        glActiveTexture(GL_TEXTURE1);
+        specularTexture->bind();
+    } else {
+        shader.setBool("useSpecularTexture", false);
+    }
     glDrawElements(GL_TRIANGLES, 36, GL_UNSIGNED_INT, 0);
     if (texture && texture->isValid()) {
+        Texture::unbind();
+    }
+    if (specularTexture && specularTexture->isValid()) {
         Texture::unbind();
     }
     glBindVertexArray(0);

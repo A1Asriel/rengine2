@@ -3,6 +3,7 @@
 
 #include <string>
 #include <cstdint>
+#include <vector>
 #include <unordered_map>
 
 namespace REngine {
@@ -47,6 +48,13 @@ public:
     /// @return true на успех, false на неудачу
     bool loadBMP(const std::string& path);
 
+    /// @brief Генерация текстуры из цвета
+    /// @param r Красный канал
+    /// @param g Зеленый канал
+    /// @param b Синий канал
+    /// @return true на успех, false на неудачу
+    bool genFromColor(float r, float g, float b);
+
     /// @brief Привязка текстуры для использования
     void bind() const;
 
@@ -80,6 +88,12 @@ private:
 
     /// @brief Количество битов на пиксель
     int bpp;
+
+    /// @brief Загрузка текстуры в OpenGL
+    /// @param rgbData Данные текстуры
+    /// @param minFilter Фильтрация при уменьшении
+    /// @param magFilter Фильтрация при увеличении
+    void loadToGL(std::vector<unsigned char>& rgbData, int minFilter, int magFilter);
 
     /// @brief Очистка текстуры
     void clear();

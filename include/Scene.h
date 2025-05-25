@@ -27,18 +27,14 @@ struct SceneNode {
     glm::vec3 rotation = glm::vec3(0.0f);
     /// @brief Масштаб объекта
     glm::vec3 scale = glm::vec3(1.0f);
-    /// @brief Коэффициент окружающей среды
-    glm::vec3 ambient = glm::vec3(1.0f);
-    /// @brief Коэффициент диффузного освещения
-    glm::vec3 diffuse = glm::vec3(1.0f);
-    /// @brief Коэффициент зеркального отражения
-    glm::vec3 specular = glm::vec3(1.0f);
     /// @brief Степень блеска
     float shininess = 32.0f;
     /// @brief Искажение текстуры
     bool distort = false;
     /// @brief Путь к текстуре
     std::string texturePath = "";
+    /// @brief Путь к текстуре отражений
+    std::string specularPath = "";
 };
 
 /// @brief Структура для хранения информации о камере
@@ -61,8 +57,12 @@ public:
     CameraNode camera;
     /// @brief Цвет неба
     glm::vec3 skyColor = glm::vec3(0.63f, 0.63f, 0.85f);
+    /// @brief Цвет окружающего освещения
+    glm::vec3 ambientColor = glm::vec3(0.2f);
     /// @brief Цвет освещения
-    glm::vec3 lightingColor = glm::vec3(1.0f);
+    glm::vec3 diffuseColor = glm::vec3(0.5f);
+    /// @brief Цвет отраженного света
+    glm::vec3 specularColor = glm::vec3(1.0f);
     /// @brief Позиция источника света
     glm::vec3 lightingPosition = glm::vec3(0.0f);
 };

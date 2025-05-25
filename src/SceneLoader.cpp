@@ -58,7 +58,7 @@ bool REngine::SceneLoader::load(const std::string& file, Scene* scene) {
                 continue;
             }
         } else if (tokens[0] == "lighting") {
-            if (tokens.size() < 10) {
+            if (tokens.size() < 16) {
                 ERROR("Line \"" << line << "\" has incorrect amount of parameters");
                 continue;
             }
@@ -67,20 +67,28 @@ bool REngine::SceneLoader::load(const std::string& file, Scene* scene) {
                 scene->skyColor.y = std::stof(tokens[2]);
                 scene->skyColor.z = std::stof(tokens[3]);
                 DEBUG("Loaded sky color: " << scene->skyColor.x << ", " << scene->skyColor.y << ", " << scene->skyColor.z);
-                scene->lightingColor.x = std::stof(tokens[4]);
-                scene->lightingColor.y = std::stof(tokens[5]);
-                scene->lightingColor.z = std::stof(tokens[6]);
-                DEBUG("Loaded lighting color: " << scene->lightingColor.x << ", " << scene->lightingColor.y << ", " << scene->lightingColor.z);
-                scene->lightingPosition.x = std::stof(tokens[7]);
-                scene->lightingPosition.y = std::stof(tokens[8]);
-                scene->lightingPosition.z = std::stof(tokens[9]);
+                scene->ambientColor.x = std::stof(tokens[4]);
+                scene->ambientColor.y = std::stof(tokens[5]);
+                scene->ambientColor.z = std::stof(tokens[6]);
+                DEBUG("Loaded ambient color: " << scene->ambientColor.x << ", " << scene->ambientColor.y << ", " << scene->ambientColor.z);
+                scene->diffuseColor.x = std::stof(tokens[7]);
+                scene->diffuseColor.y = std::stof(tokens[8]);
+                scene->diffuseColor.z = std::stof(tokens[9]);
+                DEBUG("Loaded diffuse color: " << scene->diffuseColor.x << ", " << scene->diffuseColor.y << ", " << scene->diffuseColor.z);
+                scene->specularColor.x = std::stof(tokens[10]);
+                scene->specularColor.y = std::stof(tokens[11]);
+                scene->specularColor.z = std::stof(tokens[12]);
+                DEBUG("Loaded specular color: " << scene->specularColor.x << ", " << scene->specularColor.y << ", " << scene->specularColor.z);
+                scene->lightingPosition.x = std::stof(tokens[13]);
+                scene->lightingPosition.y = std::stof(tokens[14]);
+                scene->lightingPosition.z = std::stof(tokens[15]);
                 DEBUG("Loaded lighting position: " << scene->lightingPosition.x << ", " << scene->lightingPosition.y << ", " << scene->lightingPosition.z);
             } catch(const std::exception& e) {
                 ERROR("Line \"" << line << "\" could not be interpreted");
                 continue;
             }
         } else {
-            if (tokens.size() < 21) {
+            if (tokens.size() < 11) {
                 ERROR("Line \"" << line << "\" has incorrect amount of parameters");
                 continue;
             }
@@ -107,25 +115,17 @@ bool REngine::SceneLoader::load(const std::string& file, Scene* scene) {
                 node.scale.y = std::stof(tokens[8]);
                 node.scale.z = std::stof(tokens[9]);
                 DEBUG("Loaded node scale: " << node.scale.x << ", " << node.scale.y << ", " << node.scale.z);
-                node.ambient.x = std::stof(tokens[10]);
-                node.ambient.y = std::stof(tokens[11]);
-                node.ambient.z = std::stof(tokens[12]);
-                DEBUG("Loaded node ambient: " << node.ambient.x << ", " << node.ambient.y << ", " << node.ambient.z);
-                node.diffuse.x = std::stof(tokens[13]);
-                node.diffuse.y = std::stof(tokens[14]);
-                node.diffuse.z = std::stof(tokens[15]);
-                DEBUG("Loaded node diffuse: " << node.diffuse.x << ", " << node.diffuse.y << ", " << node.diffuse.z);
-                node.specular.x = std::stof(tokens[16]);
-                node.specular.y = std::stof(tokens[17]);
-                node.specular.z = std::stof(tokens[18]);
-                DEBUG("Loaded node specular: " << node.specular.x << ", " << node.specular.y << ", " << node.specular.z);
-                node.shininess = std::stof(tokens[19]);
+                node.shininess = std::stof(tokens[10]);
                 DEBUG("Loaded node shininess: " << node.shininess);
-                node.distort = tokens[20] == "true";
+                node.distort = tokens[11] == "true";
                 DEBUG("Loaded node distort: " << node.distort);
-                if (tokens.size() >= 22 && !tokens[21].empty()) {
-                    node.texturePath = tokens[21];
+                if (tokens.size() > 12) {
+                    node.texturePath = tokens[12];
                     DEBUG("Loaded texture path: " << node.texturePath);
+                }
+                if (tokens.size() > 13) {
+                    node.specularPath = tokens[13];
+                    DEBUG("Loaded specular path: " << node.specularPath);
                 }
             } catch(const std::exception& e) {
                 ERROR("Line \"" << line << "\" could not be interpreted");

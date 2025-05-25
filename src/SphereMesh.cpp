@@ -95,15 +95,20 @@ REngine::SphereMesh::~SphereMesh() {
 void REngine::SphereMesh::draw(const Shader& shader) {
     glBindVertexArray(VAO);
     if (texture && texture->isValid()) {
-        shader.setBool("useTexture", true);
-        shader.setInt("textureSampler", 0);
+        shader.setInt("material.diffuse", 0);
         glActiveTexture(GL_TEXTURE0);
         texture->bind();
-    } else {
-        shader.setBool("useTexture", false);
+    }
+    if (specularTexture && specularTexture->isValid()) {
+        shader.setInt("material.specular", 1);
+        glActiveTexture(GL_TEXTURE1);
+        specularTexture->bind();
     }
     glDrawElements(GL_TRIANGLES, indexSize, GL_UNSIGNED_INT, 0);
     if (texture && texture->isValid()) {
+        Texture::unbind();
+    }
+    if (specularTexture && specularTexture->isValid()) {
         Texture::unbind();
     }
     glBindVertexArray(0);

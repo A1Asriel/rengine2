@@ -10,7 +10,8 @@
 #include "Logging.h"
 #include "Texture.h"
 
-void applyTexture(REngine::Mesh* mesh, std::string texturePath);
+void applyTexture(REngine::SceneNode& node, glm::vec3 defColor = glm::vec3(1.0f));
+void applySpecTexture(REngine::SceneNode& node, glm::vec3 defColor = glm::vec3(0.5f));
 
 REngine::Renderer::Renderer(int width, int height)
     : width(width), height(height), camera(width, height) {}
@@ -47,11 +48,13 @@ void REngine::Renderer::Draw(unsigned long ticks) {
     shader->setMat4("view", camera.getViewMatrix());
     shader->setMat4("projection", camera.getProjectionMatrix());
     shader->setFloat("u_time", ticks / 1000.0f);
-    shader->setVec3("u_light_color", scene.lightingColor);
-    shader->setVec3("u_light_position", scene.lightingPosition);
     shader->setVec3("u_camera_position", camera.position);
+    shader->setVec3("light.position", scene.lightingPosition);
+    shader->setVec3("light.ambient", scene.ambientColor);
+    shader->setVec3("light.diffuse", scene.diffuseColor);
+    shader->setVec3("light.specular", scene.specularColor);
 
-    for (const SceneNode node : scene.nodes) {
+    for (SceneNode& node : scene.nodes) {
         glm::mat4 model = glm::mat4(1.0f);
         model = glm::translate(model, node.position);
         model = glm::rotate(model, glm::radians(node.rotation.x), glm::vec3(1.0f, 0.0f, 0.0f));
@@ -61,33 +64,67 @@ void REngine::Renderer::Draw(unsigned long ticks) {
         shader->setMat4("model", model);
         shader->setMat4("normalMatrix", glm::transpose(glm::inverse(model)));
         shader->setBool("distort", node.distort);
-        shader->setVec3("material.ambient", node.ambient);
-        shader->setVec3("material.diffuse", node.diffuse);
-        shader->setVec3("material.specular", node.specular);
         shader->setFloat("material.shininess", node.shininess);
-        applyTexture(node.mesh, node.texturePath);
+        applyTexture(node);
+        applySpecTexture(node);
         node.mesh->draw(*shader);
     }
 }
 
-void applyTexture(REngine::Mesh* mesh, std::string texturePath) {
-    if (texturePath.empty()) return;
-
+void applyTexture(REngine::SceneNode& node, glm::vec3 defColor) {
     REngine::Texture* tex = new REngine::Texture();
-    if (REngine::Texture::textures.count(texturePath) > 0) {
-        mesh->texture = REngine::Texture::textures[texturePath];
-    } else if (tex->loadBMP(texturePath)) {
-        REngine::Texture::textures[texturePath] = tex;
-        mesh->texture = tex;
-    } else if (tex->loadBMP("./textures/" + texturePath)) {
-        REngine::Texture::textures[texturePath] = tex;
-        mesh->texture = tex;
-    } else if (tex->loadBMP("../textures/" + texturePath)) {
-        REngine::Texture::textures[texturePath] = tex;
-        mesh->texture = tex;
+    if (node.texturePath.empty()) {
+        node.texturePath = "gen_color_" + std::to_string(defColor.x) + "_" + std::to_string(defColor.y) + "_" + std::to_string(defColor.z);
+        tex->genFromColor(defColor.x, defColor.y, defColor.z);
+        node.mesh->texture = tex;
+        REngine::Texture::textures[node.texturePath] = tex;
+        return;
+    }
+    if (REngine::Texture::textures.count(node.texturePath) > 0) {
+        node.mesh->texture = REngine::Texture::textures[node.texturePath];
+    } else if (tex->loadBMP(node.texturePath)) {
+        REngine::Texture::textures[node.texturePath] = tex;
+        node.mesh->texture = tex;
+    } else if (tex->loadBMP("./textures/" + node.texturePath)) {
+        REngine::Texture::textures[node.texturePath] = tex;
+        node.mesh->texture = tex;
+    } else if (tex->loadBMP("../textures/" + node.texturePath)) {
+        REngine::Texture::textures[node.texturePath] = tex;
+        node.mesh->texture = tex;
     } else {
-        ERROR("Failed to load texture: " + texturePath);
-        delete tex;
-        REngine::Texture::textures[texturePath] = nullptr;
+        ERROR("Failed to load texture: " + node.texturePath);
+        node.texturePath = "gen_color_" + std::to_string(defColor.x) + "_" + std::to_string(defColor.y) + "_" + std::to_string(defColor.z);
+        tex->genFromColor(defColor.x, defColor.y, defColor.z);
+        node.mesh->texture = tex;
+        REngine::Texture::textures[node.texturePath] = tex;
+    }
+}
+
+void applySpecTexture(REngine::SceneNode& node, glm::vec3 defColor) {
+    REngine::Texture* tex = new REngine::Texture();
+    if (node.specularPath.empty()) {
+        node.specularPath = "gen_color_" + std::to_string(defColor.x) + "_" + std::to_string(defColor.y) + "_" + std::to_string(defColor.z);
+        tex->genFromColor(defColor.x, defColor.y, defColor.z);
+        node.mesh->specularTexture = tex;
+        REngine::Texture::textures[node.specularPath] = tex;
+        return;
+    }
+    if (REngine::Texture::textures.count(node.specularPath) > 0) {
+        node.mesh->specularTexture = REngine::Texture::textures[node.specularPath];
+    } else if (tex->loadBMP(node.specularPath)) {
+        REngine::Texture::textures[node.specularPath] = tex;
+        node.mesh->specularTexture = tex;
+    } else if (tex->loadBMP("./textures/" + node.specularPath)) {
+        REngine::Texture::textures[node.specularPath] = tex;
+        node.mesh->specularTexture = tex;
+    } else if (tex->loadBMP("../textures/" + node.specularPath)) {
+        REngine::Texture::textures[node.specularPath] = tex;
+        node.mesh->specularTexture = tex;
+    } else {
+        ERROR("Failed to load specular texture: " + node.specularPath);
+        node.specularPath = "gen_color_" + std::to_string(defColor.x) + "_" + std::to_string(defColor.y) + "_" + std::to_string(defColor.z);
+        tex->genFromColor(defColor.x, defColor.y, defColor.z);
+        node.mesh->specularTexture = tex;
+        REngine::Texture::textures[node.specularPath] = tex;
     }
 }

@@ -71,13 +71,6 @@ bool REngine::Texture::loadBMP(const std::string& path) {
         return false;
     }
 
-    glGenTextures(1, &textureID);
-    glBindTexture(GL_TEXTURE_2D, textureID);
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST_MIPMAP_NEAREST);
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
-
     std::vector<unsigned char> rgbData(width * abs(height) * (bpp == 24 ? 3 : 4));
 
     int pixelSize = bpp / 8;
@@ -97,13 +90,39 @@ bool REngine::Texture::loadBMP(const std::string& path) {
         }
     }
 
+    loadToGL(rgbData, GL_NEAREST_MIPMAP_LINEAR, GL_NEAREST);
+
+    DEBUG("Loaded BMP texture: " + path + " (" + std::to_string(width) + "x" + std::to_string(height) + ", " + std::to_string(bpp) + " bpp)");
+    return true;
+}
+
+bool REngine::Texture::genFromColor(float r, float g, float b) {
+    clear();
+    width = 1;
+    height = 1;
+    bpp = 24;
+    std::vector<unsigned char> rgbData(width * height * 3);
+    for (int i = 0; i < width * height; i++) {
+        rgbData[i * 3] = r * 255;
+        rgbData[i * 3 + 1] = g * 255;
+        rgbData[i * 3 + 2] = b * 255;
+    }
+    loadToGL(rgbData, GL_NEAREST_MIPMAP_LINEAR, GL_NEAREST);
+    DEBUG("Generated color texture: " << r << ", " << g << ", " << b);
+    return true;
+}
+
+void REngine::Texture::loadToGL(std::vector<unsigned char>& rgbData, int minFilter, int magFilter) {
+    glGenTextures(1, &textureID);
+    glBindTexture(GL_TEXTURE_2D, textureID);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, minFilter);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, magFilter);
     GLenum format = (bpp == 24) ? GL_RGB : GL_RGBA;
     glTexImage2D(GL_TEXTURE_2D, 0, format, width, height, 0, format, GL_UNSIGNED_BYTE, rgbData.data());
     glGenerateMipmap(GL_TEXTURE_2D);
     glBindTexture(GL_TEXTURE_2D, 0);
-
-    DEBUG("Loaded BMP texture: " + path + " (" + std::to_string(width) + "x" + std::to_string(height) + ", " + std::to_string(bpp) + " bpp)");
-    return true;
 }
 
 void REngine::Texture::bind() const {
