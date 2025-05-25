@@ -15,6 +15,8 @@ private:
     int width;
     /// @brief Высота окна
     int height;
+    /// @brief Сцена для рендеринга
+    Scene scene;
 public:
     /// @brief Конструктор движка
     /// @param width Ширина окна
@@ -23,10 +25,16 @@ public:
 
     /// @brief Указатель на шейдер для рендеринга
     Shader* shader;
-    /// @brief Сцена для рендеринга
-    Scene scene;
     /// @brief Камера для просмотра сцены
     Camera camera;
+
+    /// @brief Получение сцены
+    /// @return Указатель на сцену
+    Scene* getScene() { return &scene; }
+
+    /// @brief Установка сцены
+    /// @param scene Указатель на сцену
+    void setScene(Scene* scene);
 
     /// @brief Инициализация движка
     /// @param procAddress Функция загрузки процедур

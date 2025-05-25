@@ -15,6 +15,13 @@ void applyTexture(REngine::Mesh* mesh, std::string texturePath);
 REngine::Renderer::Renderer(int width, int height)
     : width(width), height(height), camera(width, height) {}
 
+void REngine::Renderer::setScene(Scene* scene) {
+    this->scene = *scene;
+    camera.position = scene->camera.position;
+    camera.setRotation(scene->camera.rotation.x, scene->camera.rotation.y, scene->camera.rotation.z);
+    camera.fov = scene->camera.fov;
+}
+
 int REngine::Renderer::Init(GLADloadproc procAddress) {
     if (!gladLoadGLLoader(procAddress)) {
         FATAL("Failed to initialize OpenGL");

@@ -7,6 +7,17 @@
 REngine::Camera::Camera(int width, int height)
     : position{0,0,3}, front{0,0,-1}, up{0,1,0}, fov{60.0f}, w(width), h(height) {}
 
+void REngine::Camera::setRotation(float rx, float ry, float rz) {
+    front = glm::vec3(cos(glm::radians(ry)) * cos(glm::radians(rx)),
+                      sin(glm::radians(rx)),
+                      sin(glm::radians(ry)) * cos(glm::radians(rx)));
+    front = glm::normalize(front);
+}
+
+std::tuple<float, float, float> REngine::Camera::getRotation() const {
+    return std::make_tuple(glm::degrees(asin(front.y)), glm::degrees(atan2(front.z, front.x)), 0);
+}
+
 glm::mat4 REngine::Camera::getViewMatrix() const {
     return glm::lookAt(position, position + front, up);
 }
@@ -22,20 +33,13 @@ void REngine::Camera::moveRelative(float dx, float dy, float dz) {
     position += dz * front + dx * right + dy * upDirection;
 }
 
-void REngine::Camera::rotateRelative(int drx, int dry, int drz) {
+void REngine::Camera::rotateRelative(float drx, float dry, float drz) {
     // TODO: Крен
     static const float limit = 89.0f;
-    float yaw = glm::degrees(atan2(front.z, front.x));
-    float pitch = glm::degrees(asin(front.y));
+    auto [pitch, yaw, roll] = getRotation();
 
-    yaw += drx / 5.0f;
-    pitch = glm::clamp(pitch - dry / 5.0f, -limit, limit);
+    yaw += drx;
+    pitch = glm::clamp(pitch - dry, -limit, limit);
 
-    float yawRad = glm::radians(yaw);
-    float pitchRad = glm::radians(pitch);
-
-    front.x = cos(yawRad) * cos(pitchRad);
-    front.y = sin(pitchRad);
-    front.z = sin(yawRad) * cos(pitchRad);
-    front = glm::normalize(front);
+    setRotation(pitch, yaw, 0);
 }

@@ -8,13 +8,15 @@ namespace REngine {
 /// @details Предоставляет функционал для управления камерой в 3D пространстве
 /// @note Использует glm для математических вычислений
 class Camera {
-public:
-    /// @brief Позиция камеры
-    glm::vec3 position;
+private:
     /// @brief Направление камеры
     glm::vec3 front;
     /// @brief Вертикальный вектор камеры
     glm::vec3 up;
+
+public:
+    /// @brief Позиция камеры
+    glm::vec3 position;
     /// @brief Поле зрения камеры
     float fov;
     /// @brief Ширина окна
@@ -26,6 +28,16 @@ public:
     /// @param width Ширина окна
     /// @param height Высота окна
     Camera(int width, int height);
+
+    /// @brief Установка углов поворота камеры
+    /// @param rx Угол поворота по X в градусах
+    /// @param ry Угол поворота по Y в градусах
+    /// @param rz Угол поворота по Z в градусах
+    void setRotation(float rx, float ry, float rz);
+
+    /// @brief Получение углов поворота камеры
+    /// @return std::tuple<float, float, float> Углы поворота по X, Y и Z в градусах
+    std::tuple<float, float, float> getRotation() const;
 
     /// @brief Получение матрицы просмотра
     /// @return glm::mat4 Матрица просмотра
@@ -42,10 +54,10 @@ public:
     void moveRelative(float dx, float dy, float dz);
 
     /// @brief Относительный поворот камеры
-    /// @param drx Поворот по X
-    /// @param dry Поворот по Y
-    /// @param drz Поворот по Z
-    void rotateRelative(int drx, int dry, int drz);
+    /// @param drx Поворот по X в градусах
+    /// @param dry Поворот по Y в градусах
+    /// @param drz Поворот по Z в градусах
+    void rotateRelative(float drx, float dry, float drz);
 };
 }
 
