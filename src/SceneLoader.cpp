@@ -57,8 +57,8 @@ bool REngine::SceneLoader::load(const std::string& file, Scene* scene) {
                 ERROR("Line \"" << line << "\" could not be interpreted");
                 continue;
             }
-        } else if (tokens[0] == "lighting") {
-            if (tokens.size() < 16) {
+        } else if (tokens[0] == "sky") {
+            if (tokens.size() < 4) {
                 ERROR("Line \"" << line << "\" has incorrect amount of parameters");
                 continue;
             }
@@ -67,22 +67,64 @@ bool REngine::SceneLoader::load(const std::string& file, Scene* scene) {
                 scene->skyColor.y = std::stof(tokens[2]);
                 scene->skyColor.z = std::stof(tokens[3]);
                 DEBUG("Loaded sky color: " << scene->skyColor.x << ", " << scene->skyColor.y << ", " << scene->skyColor.z);
-                scene->ambientColor.x = std::stof(tokens[4]);
-                scene->ambientColor.y = std::stof(tokens[5]);
-                scene->ambientColor.z = std::stof(tokens[6]);
-                DEBUG("Loaded ambient color: " << scene->ambientColor.x << ", " << scene->ambientColor.y << ", " << scene->ambientColor.z);
-                scene->diffuseColor.x = std::stof(tokens[7]);
-                scene->diffuseColor.y = std::stof(tokens[8]);
-                scene->diffuseColor.z = std::stof(tokens[9]);
-                DEBUG("Loaded diffuse color: " << scene->diffuseColor.x << ", " << scene->diffuseColor.y << ", " << scene->diffuseColor.z);
-                scene->specularColor.x = std::stof(tokens[10]);
-                scene->specularColor.y = std::stof(tokens[11]);
-                scene->specularColor.z = std::stof(tokens[12]);
-                DEBUG("Loaded specular color: " << scene->specularColor.x << ", " << scene->specularColor.y << ", " << scene->specularColor.z);
-                scene->lightingPosition.x = std::stof(tokens[13]);
-                scene->lightingPosition.y = std::stof(tokens[14]);
-                scene->lightingPosition.z = std::stof(tokens[15]);
-                DEBUG("Loaded lighting position: " << scene->lightingPosition.x << ", " << scene->lightingPosition.y << ", " << scene->lightingPosition.z);
+            } catch(const std::exception& e) {
+                ERROR("Line \"" << line << "\" could not be interpreted");
+                continue;
+            }
+        } else if (tokens[0] == "dirlight") {
+            if (tokens.size() < 13) {
+                ERROR("Line \"" << line << "\" has incorrect amount of parameters");
+                continue;
+            }
+            try {
+                scene->dirLight.direction.x = std::stof(tokens[1]);
+                scene->dirLight.direction.y = std::stof(tokens[2]);
+                scene->dirLight.direction.z = std::stof(tokens[3]);
+                DEBUG("Loaded direction: " << scene->dirLight.direction.x << ", " << scene->dirLight.direction.y << ", " << scene->dirLight.direction.z);
+                scene->dirLight.ambient.x = std::stof(tokens[4]);
+                scene->dirLight.ambient.y = std::stof(tokens[5]);
+                scene->dirLight.ambient.z = std::stof(tokens[6]);
+                DEBUG("Loaded directional ambient color: " << scene->dirLight.ambient.x << ", " << scene->dirLight.ambient.y << ", " << scene->dirLight.ambient.z);
+                scene->dirLight.diffuse.x = std::stof(tokens[7]);
+                scene->dirLight.diffuse.y = std::stof(tokens[8]);
+                scene->dirLight.diffuse.z = std::stof(tokens[9]);
+                DEBUG("Loaded directional diffuse color: " << scene->dirLight.diffuse.x << ", " << scene->dirLight.diffuse.y << ", " << scene->dirLight.diffuse.z);
+                scene->dirLight.specular.x = std::stof(tokens[10]);
+                scene->dirLight.specular.y = std::stof(tokens[11]);
+                scene->dirLight.specular.z = std::stof(tokens[12]);
+                DEBUG("Loaded directional specular color: " << scene->dirLight.specular.x << ", " << scene->dirLight.specular.y << ", " << scene->dirLight.specular.z);
+            } catch(const std::exception& e) {
+                ERROR("Line \"" << line << "\" could not be interpreted");
+                continue;
+            }
+        } else if (tokens[0] == "pointlight") {
+            if (tokens.size() < 16) {
+                ERROR("Line \"" << line << "\" has incorrect amount of parameters");
+                continue;
+            }
+            try {
+                PointLight pointLight;
+                pointLight.position.x = std::stof(tokens[1]);
+                pointLight.position.y = std::stof(tokens[2]);
+                pointLight.position.z = std::stof(tokens[3]);
+                DEBUG("Loaded position: " << pointLight.position.x << ", " << pointLight.position.y << ", " << pointLight.position.z);
+                pointLight.constant = std::stof(tokens[4]);
+                pointLight.linear = std::stof(tokens[5]);
+                pointLight.quadratic = std::stof(tokens[6]);
+                DEBUG("Loaded constants: " << pointLight.constant << ", " << pointLight.linear << ", " << pointLight.quadratic);
+                pointLight.ambient.x = std::stof(tokens[7]);
+                pointLight.ambient.y = std::stof(tokens[8]);
+                pointLight.ambient.z = std::stof(tokens[9]);
+                DEBUG("Loaded point ambient color: " << pointLight.ambient.x << ", " << pointLight.ambient.y << ", " << pointLight.ambient.z);
+                pointLight.diffuse.x = std::stof(tokens[10]);
+                pointLight.diffuse.y = std::stof(tokens[11]);
+                pointLight.diffuse.z = std::stof(tokens[12]);
+                DEBUG("Loaded point diffuse color: " << pointLight.diffuse.x << ", " << pointLight.diffuse.y << ", " << pointLight.diffuse.z);
+                pointLight.specular.x = std::stof(tokens[13]);
+                pointLight.specular.y = std::stof(tokens[14]);
+                pointLight.specular.z = std::stof(tokens[15]);
+                DEBUG("Loaded point specular color: " << pointLight.specular.x << ", " << pointLight.specular.y << ", " << pointLight.specular.z);
+                scene->pointLights.push_back(pointLight);
             } catch(const std::exception& e) {
                 ERROR("Line \"" << line << "\" could not be interpreted");
                 continue;

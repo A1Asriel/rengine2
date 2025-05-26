@@ -47,6 +47,36 @@ struct CameraNode {
     float fov = 45.0f;
 };
 
+/// @brief Структура для хранения информации о направленном источнике света
+struct DirLight {
+    /// @brief Направление света
+    glm::vec3 direction;
+    /// @brief Цвет окружающего освещения
+    glm::vec3 ambient;
+    /// @brief Цвет освещения
+    glm::vec3 diffuse;
+    /// @brief Цвет отраженного света
+    glm::vec3 specular;
+};
+
+/// @brief Структура для хранения информации о точечном источнике света
+struct PointLight {
+    /// @brief Позиция источника света
+    glm::vec3 position;
+    /// @brief Константа затухания
+    float constant;
+    /// @brief Линейный коэффициент затухания
+    float linear;
+    /// @brief Квадратичный коэффициент затухания
+    float quadratic;
+    /// @brief Цвет окружающего освещения
+    glm::vec3 ambient;
+    /// @brief Цвет освещения
+    glm::vec3 diffuse;
+    /// @brief Цвет отраженного света
+    glm::vec3 specular;
+};
+
 /// @brief Класс для управления сценой
 /// @details Хранит и управляет коллекцией сценных объектов
 class Scene {
@@ -57,14 +87,10 @@ public:
     CameraNode camera;
     /// @brief Цвет неба
     glm::vec3 skyColor = glm::vec3(0.63f, 0.63f, 0.85f);
-    /// @brief Цвет окружающего освещения
-    glm::vec3 ambientColor = glm::vec3(0.2f);
-    /// @brief Цвет освещения
-    glm::vec3 diffuseColor = glm::vec3(0.5f);
-    /// @brief Цвет отраженного света
-    glm::vec3 specularColor = glm::vec3(1.0f);
-    /// @brief Позиция источника света
-    glm::vec3 lightingPosition = glm::vec3(0.0f);
+    /// @brief Направленный источник света
+    DirLight dirLight;
+    /// @brief Точечные источники света
+    std::vector<PointLight> pointLights;
 };
 }
 
