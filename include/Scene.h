@@ -6,6 +6,8 @@
 #include <vector>
 #include "Mesh.h"
 
+#define POINT_LIGHTS_MAX 128
+
 namespace REngine {
 /// @brief Типы примитивов для отрисовки
 enum class MeshType {

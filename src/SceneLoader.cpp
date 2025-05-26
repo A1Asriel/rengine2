@@ -102,6 +102,10 @@ bool REngine::SceneLoader::load(const std::string& file, Scene* scene) {
                 ERROR("Line \"" << line << "\" has incorrect amount of parameters");
                 continue;
             }
+            if (scene->pointLights.size() >= POINT_LIGHTS_MAX) {
+                ERROR("The scene has exceeded the maximum amount of point lights. Skipping");
+                continue;
+            }
             try {
                 PointLight pointLight;
                 pointLight.position.x = std::stof(tokens[1]);

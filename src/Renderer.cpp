@@ -10,8 +10,6 @@
 #include "Logging.h"
 #include "Texture.h"
 
-#define POINT_LIGHTS_MAX 8
-
 void applyTexture(REngine::SceneNode& node, glm::vec3 defColor = glm::vec3(1.0f));
 void applySpecTexture(REngine::SceneNode& node, glm::vec3 defColor = glm::vec3(0.5f));
 
@@ -55,6 +53,7 @@ void REngine::Renderer::Draw(unsigned long ticks) {
     shader->setVec3("dirLight.ambient", scene.dirLight.ambient);
     shader->setVec3("dirLight.diffuse", scene.dirLight.diffuse);
     shader->setVec3("dirLight.specular", scene.dirLight.specular);
+    shader->setInt("pointLightsCount", std::min((int)scene.pointLights.size(), POINT_LIGHTS_MAX));
     for (int i = 0; i < std::min((int)scene.pointLights.size(), POINT_LIGHTS_MAX); i++) {
         shader->setVec3("pointLights[" + std::to_string(i) + "].position", scene.pointLights[i].position);
         shader->setVec3("pointLights[" + std::to_string(i) + "].ambient", scene.pointLights[i].ambient);
@@ -63,17 +62,6 @@ void REngine::Renderer::Draw(unsigned long ticks) {
         shader->setFloat("pointLights[" + std::to_string(i) + "].constant", scene.pointLights[i].constant);
         shader->setFloat("pointLights[" + std::to_string(i) + "].linear", scene.pointLights[i].linear);
         shader->setFloat("pointLights[" + std::to_string(i) + "].quadratic", scene.pointLights[i].quadratic);
-    }
-    if (scene.pointLights.size() < POINT_LIGHTS_MAX) {
-        for (int i = scene.pointLights.size(); i < POINT_LIGHTS_MAX; i++) {
-            shader->setVec3("pointLights[" + std::to_string(i) + "].position", glm::vec3(0.0f));
-            shader->setVec3("pointLights[" + std::to_string(i) + "].ambient", glm::vec3(0.0f));
-            shader->setVec3("pointLights[" + std::to_string(i) + "].diffuse", glm::vec3(0.0f));
-            shader->setVec3("pointLights[" + std::to_string(i) + "].specular", glm::vec3(0.0f));
-            shader->setFloat("pointLights[" + std::to_string(i) + "].constant", 1.0f);
-            shader->setFloat("pointLights[" + std::to_string(i) + "].linear", 0.0f);
-            shader->setFloat("pointLights[" + std::to_string(i) + "].quadratic", 0.0f);
-        }
     }
 
     for (SceneNode& node : scene.nodes) {
