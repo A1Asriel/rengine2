@@ -78,7 +78,7 @@ TEST(Camera, DefaultViewProjection) {
 
 TEST(Renderer, InitAndDraw) {
     Renderer* window = new Renderer("Test Window", 640, 480);
-    ASSERT_EQ(window->Init(), 0) << "Window initialization failed";
+    ASSERT_EQ(window->init(), 0) << "Window initialization failed";
     ASSERT_NE(window->getSDL_Window(), nullptr);
     ASSERT_NE(window->getSDL_GLContext(), nullptr);
 
@@ -95,7 +95,7 @@ TEST(Renderer, InitAndDraw) {
     scene.nodes.push_back({MeshType::Cube, glm::vec3(1, 2, 3), glm::vec3(45, 0, 0), glm::vec3(2), true, "16bit.bmp"});
     scene.nodes.push_back({MeshType::Cube, glm::vec3(1, 2, 3), glm::vec3(45, 0, 0), glm::vec3(2), true, "not_real.bmp"});
     window->scene = &scene;
-    window->Draw(0);
+    window->draw(0);
 
     delete window->shader;
     delete window;

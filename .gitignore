@@ -79,4 +79,6 @@ build.ninja
 
 #############
 
+sdl2-mingw/*
+!sdl2-mingw/cmake/
 install/

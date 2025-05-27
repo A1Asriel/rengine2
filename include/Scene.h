@@ -79,9 +79,9 @@ struct PointLight {
     glm::vec3 specular;
 };
 
-/// @brief Класс для управления сценой
+/// @brief Структура для управления сценой
 /// @details Хранит и управляет коллекцией сценных объектов
-class Scene {
+struct Scene {
 public:
     /// @brief Список объектов сцены
     std::vector<SceneNode> nodes = {};

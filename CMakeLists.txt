@@ -13,15 +13,16 @@ FetchContent_MakeAvailable(glm)
 
 set(CMAKE_CXX_STANDARD 17)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
-set(BUILD_SHARED_LIBRARIES OFF)
+set(BUILD_SHARED_LIBRARIES ON)
 
 if(WIN32 OR MINGW)
     set(CMAKE_FIND_LIBRARY_SUFFIXES ".a")
-    set(CMAKE_EXE_LINKER_FLAGS "-static")
+    set(SDL2_DIR "${CMAKE_CURRENT_LIST_DIR}/sdl2-mingw/cmake")
     # set(EXTRA_LIBS opengl32 glu32 gdi32)
 endif()
 
 # find_package(OpenGL REQUIRED)
+find_package(SDL2 REQUIRED)
 
 set(SOURCES
     src/glad.c
@@ -29,9 +30,10 @@ set(SOURCES
     src/CubeMesh.cpp
     src/SphereMesh.cpp
     src/Renderer.cpp
-    src/SceneLoader.cpp
+    src/InputHandler.cpp
     src/Camera.cpp
     src/Texture.cpp
+    src/Window.cpp
 )
 
 # Create library
@@ -46,16 +48,15 @@ target_include_directories(
     PRIVATE src
     PUBLIC
         $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>
-        $<BUILD_INTERFACE:${glm_SOURCE_DIR}>  # Add glm's source dir
+        $<BUILD_INTERFACE:${glm_SOURCE_DIR}>
         $<INSTALL_INTERFACE:${CMAKE_INSTALL_INCLUDEDIR}>
 )
 
 # Link libraries (remove glm::glm)
 target_link_libraries(rengine
     PUBLIC
-        ${EXTRA_LIBS}
-        # OpenGL::GL
-        "-static-libgcc" "-static-libstdc++"
+    ${EXTRA_LIBS}
+    SDL2::SDL2-static SDL2::SDL2main
 )
 
 include(GNUInstallDirs)
@@ -72,7 +73,7 @@ install(
 
 # Install your headers and glm's headers
 install(DIRECTORY include/ DESTINATION ${CMAKE_INSTALL_INCLUDEDIR})
-install(DIRECTORY ${glm_SOURCE_DIR}/glm DESTINATION ${CMAKE_INSTALL_INCLUDEDIR})  # Critical!
+install(DIRECTORY ${glm_SOURCE_DIR}/glm DESTINATION ${CMAKE_INSTALL_INCLUDEDIR})
 
 # Generate and install config files
 include(CMakePackageConfigHelpers)

@@ -16,35 +16,41 @@ private:
     /// @brief Высота окна
     int height;
     /// @brief Сцена для рендеринга
-    Scene scene;
+    Scene* scene;
+    /// @brief Указатель на шейдер для рендеринга
+    Shader* shader;
 public:
     /// @brief Конструктор движка
     /// @param width Ширина окна
     /// @param height Высота окна
     Renderer(int width, int height);
 
-    /// @brief Указатель на шейдер для рендеринга
-    Shader* shader;
     /// @brief Камера для просмотра сцены
     Camera camera;
 
     /// @brief Получение сцены
     /// @return Указатель на сцену
-    Scene* getScene() { return &scene; }
+    Scene* getScene() { return scene; }
 
     /// @brief Установка сцены
     /// @param scene Указатель на сцену
     void setScene(Scene* scene);
 
-    /// @brief Инициализация движка
-    /// @param procAddress Функция загрузки процедур
-    /// @return 0 при успешной инициализации, код ошибки в противном случае
-    int Init(GLADloadproc procAddress);
+    /// @brief Установка шейдера
+    /// @param vertexPath Путь к вершинному шейдеру
+    /// @param fragmentPath Путь к фрагментному шейдеру
+    void setShader(const char* vertexPath, const char* fragmentPath);
 
     /// @brief Отрисовка сцены
     /// @param ticks Текущее время в миллисекундах
-    void Draw(unsigned long ticks);
+    void draw(unsigned long ticks);
 };
+
+/// @brief Инициализация движка
+/// @param width Ширина окна
+/// @param height Высота окна
+/// @return Указатель на инициализированный движок
+Renderer* initRenderer(int width, int height);
 }
 
 #endif

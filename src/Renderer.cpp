@@ -4,6 +4,7 @@
 #include <glm/gtc/matrix_transform.hpp>
 #include <algorithm>
 #include <vector>
+#include <SDL.h>
 
 #include "CubeMesh.h"
 #include "SphereMesh.h"
@@ -17,16 +18,20 @@ REngine::Renderer::Renderer(int width, int height)
     : width(width), height(height), camera(width, height) {}
 
 void REngine::Renderer::setScene(Scene* scene) {
-    this->scene = *scene;
+    this->scene = scene;
     camera.position = scene->camera.position;
     camera.setRotation(scene->camera.rotation.x, scene->camera.rotation.y, scene->camera.rotation.z);
     camera.fov = scene->camera.fov;
 }
 
-int REngine::Renderer::Init(GLADloadproc procAddress) {
-    if (!gladLoadGLLoader(procAddress)) {
+void REngine::Renderer::setShader(const char* vertexPath, const char* fragmentPath) {
+    shader = new Shader(vertexPath, fragmentPath);
+}
+
+REngine::Renderer* REngine::initRenderer(int width, int height) {
+    if (!gladLoadGLLoader((GLADloadproc)SDL_GL_GetProcAddress)) {
         FATAL("Failed to initialize OpenGL");
-        return -1;
+        return nullptr;
     }
 
     INFO("GPU vendor: " << glGetString(GL_VENDOR));
@@ -37,11 +42,11 @@ int REngine::Renderer::Init(GLADloadproc procAddress) {
     glViewport(0, 0, width, height);
     glEnable(GL_DEPTH_TEST);
 
-    return 0;
+    return new REngine::Renderer(width, height);
 }
 
-void REngine::Renderer::Draw(unsigned long ticks) {
-    glClearColor(scene.skyColor.x, scene.skyColor.y, scene.skyColor.z, 1.0f);
+void REngine::Renderer::draw(unsigned long ticks) {
+    glClearColor(scene->skyColor.x, scene->skyColor.y, scene->skyColor.z, 1.0f);
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
     shader->use();
@@ -49,22 +54,22 @@ void REngine::Renderer::Draw(unsigned long ticks) {
     shader->setMat4("projection", camera.getProjectionMatrix());
     shader->setFloat("u_time", ticks / 1000.0f);
     shader->setVec3("u_camera_position", camera.position);
-    shader->setVec3("dirLight.direction", scene.dirLight.direction);
-    shader->setVec3("dirLight.ambient", scene.dirLight.ambient);
-    shader->setVec3("dirLight.diffuse", scene.dirLight.diffuse);
-    shader->setVec3("dirLight.specular", scene.dirLight.specular);
-    shader->setInt("pointLightsCount", std::min((int)scene.pointLights.size(), POINT_LIGHTS_MAX));
-    for (int i = 0; i < std::min((int)scene.pointLights.size(), POINT_LIGHTS_MAX); i++) {
-        shader->setVec3("pointLights[" + std::to_string(i) + "].position", scene.pointLights[i].position);
-        shader->setVec3("pointLights[" + std::to_string(i) + "].ambient", scene.pointLights[i].ambient);
-        shader->setVec3("pointLights[" + std::to_string(i) + "].diffuse", scene.pointLights[i].diffuse);
-        shader->setVec3("pointLights[" + std::to_string(i) + "].specular", scene.pointLights[i].specular);
-        shader->setFloat("pointLights[" + std::to_string(i) + "].constant", scene.pointLights[i].constant);
-        shader->setFloat("pointLights[" + std::to_string(i) + "].linear", scene.pointLights[i].linear);
-        shader->setFloat("pointLights[" + std::to_string(i) + "].quadratic", scene.pointLights[i].quadratic);
+    shader->setVec3("dirLight.direction", scene->dirLight.direction);
+    shader->setVec3("dirLight.ambient", scene->dirLight.ambient);
+    shader->setVec3("dirLight.diffuse", scene->dirLight.diffuse);
+    shader->setVec3("dirLight.specular", scene->dirLight.specular);
+    shader->setInt("pointLightsCount", std::min((int)scene->pointLights.size(), POINT_LIGHTS_MAX));
+    for (int i = 0; i < std::min((int)scene->pointLights.size(), POINT_LIGHTS_MAX); i++) {
+        shader->setVec3("pointLights[" + std::to_string(i) + "].position", scene->pointLights[i].position);
+        shader->setVec3("pointLights[" + std::to_string(i) + "].ambient", scene->pointLights[i].ambient);
+        shader->setVec3("pointLights[" + std::to_string(i) + "].diffuse", scene->pointLights[i].diffuse);
+        shader->setVec3("pointLights[" + std::to_string(i) + "].specular", scene->pointLights[i].specular);
+        shader->setFloat("pointLights[" + std::to_string(i) + "].constant", scene->pointLights[i].constant);
+        shader->setFloat("pointLights[" + std::to_string(i) + "].linear", scene->pointLights[i].linear);
+        shader->setFloat("pointLights[" + std::to_string(i) + "].quadratic", scene->pointLights[i].quadratic);
     }
 
-    for (SceneNode& node : scene.nodes) {
+    for (SceneNode& node : scene->nodes) {
         glm::mat4 model = glm::mat4(1.0f);
         model = glm::translate(model, node.position);
         model = glm::rotate(model, glm::radians(node.rotation.x), glm::vec3(1.0f, 0.0f, 0.0f));
