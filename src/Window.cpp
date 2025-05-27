@@ -43,16 +43,22 @@ int REngine::createWindow(const char* title, int width, int height) {
     SDL_GL_SetAttribute(SDL_GL_CONTEXT_MINOR_VERSION, 3);
     SDL_GL_SetAttribute(SDL_GL_CONTEXT_PROFILE_MASK, SDL_GL_CONTEXT_PROFILE_CORE);
 
-    SDL_DisplayMode displayMode;
-    SDL_GetCurrentDisplayMode(0, &displayMode);
+    bool fullscreen = false;
+    if (width == 0 || height == 0) {
+        SDL_DisplayMode displayMode;
+        SDL_GetCurrentDisplayMode(0, &displayMode);
+        width = displayMode.w;
+        height = displayMode.h;
+        fullscreen = true;
+    }
 
     window = SDL_CreateWindow(
         title,
         SDL_WINDOWPOS_UNDEFINED,
         SDL_WINDOWPOS_UNDEFINED,
-        width ? width : displayMode.w,
-        height ? height : displayMode.h,
-        SDL_WINDOW_OPENGL | (width == 0 || height == 0 ? SDL_WINDOW_FULLSCREEN : 0)
+        width,
+        height,
+        SDL_WINDOW_OPENGL | (fullscreen ? SDL_WINDOW_FULLSCREEN : 0)
     );
 
     if (!window) {
