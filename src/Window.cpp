@@ -39,6 +39,11 @@ int REngine::createWindow(const char* title, int width, int height) {
         return WINDOW_ALREADY_EXISTS;
     }
 
+    if (SDL_Init(SDL_INIT_VIDEO) < 0) {
+        FATAL("SDL could not initialize! SDL_Error: " << SDL_GetError());
+        return -1;
+    }
+
     SDL_GL_SetAttribute(SDL_GL_CONTEXT_MAJOR_VERSION, 3);
     SDL_GL_SetAttribute(SDL_GL_CONTEXT_MINOR_VERSION, 3);
     SDL_GL_SetAttribute(SDL_GL_CONTEXT_PROFILE_MASK, SDL_GL_CONTEXT_PROFILE_CORE);
@@ -98,12 +103,12 @@ void REngine::mainLoop() {
     double deltaTime = 0.0f;  // Время с последнего кадра в секундах
     int frames = 0;  // Количество кадров за секунду
 
-    // Обработчик закрытия окна
-    InputHandler::setKeyDownCallback(SDLK_ESCAPE, [&quit]() {
+    // Закрытие окна при нажатии на Q
+    InputHandler::setKeyDownCallback(SDLK_q, [&quit]() {
         quit = true;
     });
 
-    // Обработчик движения мыши
+    // Перемещение камеры при удержании клавиш
     InputHandler::setKeyHoldCallback(SDLK_w, [](float deltaTime) { moveCamera(SDLK_w, deltaTime); });
     InputHandler::setKeyHoldCallback(SDLK_a, [](float deltaTime) { moveCamera(SDLK_a, deltaTime); });
     InputHandler::setKeyHoldCallback(SDLK_s, [](float deltaTime) { moveCamera(SDLK_s, deltaTime); });
@@ -118,6 +123,31 @@ void REngine::mainLoop() {
             float dy = yrel / 5.0f;
             renderer->camera.rotateRelative(dx, dy, 0);
         }
+    });
+
+    // Захват мыши при нажатии левой кнопки мыши
+    InputHandler::setMouseButtonDownCallback(SDL_BUTTON_LEFT, [](int x, int y, int button) {
+        if (SDL_SetRelativeMouseMode(SDL_TRUE) == 0) {
+            InputHandler::setMouseMotionCallback([&](int x, int y, int xrel, int yrel) {
+                float dx = xrel / 5.0f;
+                float dy = yrel / 5.0f;
+                renderer->camera.rotateRelative(dx, dy, 0);
+            });
+        } else {
+            ERROR("Failed to set relative mouse mode: " << SDL_GetError());
+        }
+    });
+
+    // Отпускание мыши при нажатии клавиши ESC
+    InputHandler::setKeyDownCallback(SDLK_ESCAPE, []() {
+        SDL_SetRelativeMouseMode(SDL_FALSE);
+        InputHandler::setMouseMotionCallback([](int x, int y, int xrel, int yrel) {
+            if (SDL_GetMouseState(NULL, NULL) & SDL_BUTTON_RMASK) {
+                float dx = xrel / 5.0f;
+                float dy = yrel / 5.0f;
+                renderer->camera.rotateRelative(dx, dy, 0);
+            }
+        });
     });
 
     while (!quit) {
