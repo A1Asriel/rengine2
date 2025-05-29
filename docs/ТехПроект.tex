@@ -72,32 +72,50 @@ GLM применяется в движке для упрощения таких 
   \begin{landscape}
     \begin{figure}[p]
       \centering
-      \includegraphics[width=1.3\textwidth]{comp.pdf}
+      \includegraphics[width=1.6\textwidth]{comp.pdf}
       \caption{Диаграмма компонентов движка с последовательностью взаимодействия}
       \label{comp:image}
     \end{figure}
   \end{landscape}
 }
 
-
 \subsubsection{Состав компонентов}
 
 Основные модули системы включают:
 
 \begin{enumerate}
-    \item RE\_Window -- компонент управления оконным контекстом, реализующий абстракцию над библиотекой SDL2. Обеспечивает:
+    \item Window -- компонент управления окном, реализующий:
 
     \begin{itemize}[itemindent=\parindent,leftmargin=\parindent]
-        \item создание и настройку графического окна;
-        \item инициализацию контекста OpenGL;
-        \item обработку системных событий и пользовательского ввода.
+        \item инициализацию окна;
+        \item обработку ввода;
+        \item обработку событий.
     \end{itemize}
 
-    \item Scene и SceneLoader -- подсистема работы со сценой:
+    \item Renderer -- компонент управления конвейером рендеринга, реализующий абстракцию над API OpenGL. Обеспечивает:
 
     \begin{itemize}[itemindent=\parindent,leftmargin=\parindent]
-        \item SceneLoader загружает список объектов из .rem-файлов;
-        \item Scene хранит коллекцию объектов (SceneNode) и управляет их состоянием.
+        \item инициализацию контекста OpenGL;
+        \item загрузку шейдеров;
+        \item управление сценой;
+        \item отрисовку сцены.
+    \end{itemize}
+
+    \item Scene -- подсистема работы со сценой:
+
+    \begin{itemize}[itemindent=\parindent,leftmargin=\parindent]
+        \item хранит коллекцию объектов (SceneNode) и управляет их состоянием;
+        \item хранит камеру и параметры освещения;
+        \item поддерживает цвет неба (skyColor), параметры направленного и точечных источников света (DirLight, PointLight), а также масштабируемое количество источников света.
+    \end{itemize}
+
+    \item InputHandler -- компонент обработки пользовательского ввода:
+
+    \begin{itemize}[itemindent=\parindent,leftmargin=\parindent]
+        \item предоставляет интерфейс для регистрации callback-функций на нажатие, удержание и отпускание клавиш;
+        \item поддерживает обработку событий мыши (движение, нажатие, прокрутка);
+        \item хранит состояния клавиш и мыши;
+        \item обеспечивает получение текущей позиции и относительного перемещения мыши.
     \end{itemize}
 
     \item Графический конвейер (неявный компонент):
@@ -105,7 +123,7 @@ GLM применяется в движке для упрощения таких 
     \begin{itemize}[itemindent=\parindent,leftmargin=\parindent]
         \item Shader -- управление шейдерными программами (вершинный/фрагментный);
         \item Texture -- загрузка, генерация и привязка текстурных объектов;
-        \item Mesh/СubeMesh/SphereMesh -- хранение геометрических данных (VBO/VAO/EBO).
+        \item Mesh -- хранение геометрических данных (VBO/VAO/EBO).
     \end{itemize}
 
     \item Camera -- компонент управления видами, реализующий:
@@ -113,7 +131,9 @@ GLM применяется в движке для упрощения таких 
     \begin{itemize}[itemindent=\parindent,leftmargin=\parindent]
         \item расчёт матриц вида и проекции;
         \item преобразование координат;
-        \item управление параметрами отображения.
+        \item управление параметрами отображения (позиция, углы, FOV);
+        \item относительное перемещение и вращение;
+        \item получение и установка углов поворота.
     \end{itemize}
 \end{enumerate}
 
@@ -125,7 +145,7 @@ GLM применяется в движке для упрощения таких 
     \item Инициализация:
 
     \begin{itemize}[itemindent=\parindent,leftmargin=\parindent]
-        \item RE\_Window создаёт графический контекст;
+        \item Renderer создаёт графический контекст;
         \item Shader компилирует шейдерные программы;
         \item SceneLoader загружает начальную сцену.
     \end{itemize}
@@ -144,8 +164,8 @@ GLM применяется в движке для упрощения таких 
             \item шейдеров (Shader).
         \end{itemize}
 
-        \item вывод результата через RE\_Window;
-        \item обработка пользовательского ввода RE\_Window и передача его значений в Camera;
+        \item вывод результата через Renderer;
+        \item обработка пользовательского ввода Renderer и передача его значений в Camera;
         \item повтор цикла до выхода из программы.
     \end{itemize}
 \end{enumerate}
@@ -158,56 +178,307 @@ GLM применяется в движке для упрощения таких 
   \begin{landscape}
     \begin{figure}[p]
       \centering
-      \includegraphics[width=1.3\textwidth]{uml.pdf}
+      \includegraphics[width=1.6\textwidth]{uml.pdf}
       \caption{Диаграмма UML}
       \label{uml:image}
     \end{figure}
   \end{landscape}
 }
 
-\subsubsection{Класс RE\_Window}
-Класс RE\_Window отвечает за создание и управление окном приложения, инициализацию и управление контекстом OpenGL, а также за отрисовку сцены. Он инкапсулирует низкоуровневые операции взаимодействия с библиотекой SDL2 для управления окном и событиями, предоставляя высокоуровневый интерфейс для основной логики приложения. Класс также содержит указатели на используемый шейдер, отображаемую сцену и камеру, через которую происходит просмотр.
+\subsubsection{Класс Renderer}
+Класс Renderer отвечает за управление процессом отрисовки трёхмерной сцены. Он инкапсулирует логику взаимодействия с графическим API (OpenGL), управляет объектами сцены, шейдерами и камерой. Класс не занимается напрямую созданием окна или обработкой событий, предполагая, что эти задачи решаются внешними компонентами.
 
-Спецификация класса RE\_Window представлена в таблице \ref{tab:re_window_spec}.
+Спецификация класса Renderer представлена в таблице \ref{tab:renderer_spec}.
 
 \begin{xltabular}{\textwidth}{|X|l|X|}
-    \caption{Спецификация класса RE\_Window\label{tab:re_window_spec}}\\ \hline
+    \caption{Спецификация класса Renderer\label{tab:renderer_spec}}\\ \hline
     \centrow Поле/Метод & \centrow Тип & \centrow Описание \\ \hline
     \endfirsthead
-    \continuecaption{Продолжение таблицы \ref{tab:re_window_spec}}
+    \continuecaption{Продолжение таблицы \ref{tab:renderer_spec}}
+    \centrow Поле/Метод & \centrow Тип & \centrow Описание \\ \hline 
+    \finishhead
+
+    \multicolumn{3}{|l|}{Приватные поля} \\ \hline
+    width & int & Ширина области рендеринга в пикселях. \\ \hline
+    height & int & Высота области рендеринга в пикселях. \\ \hline
+    scene & Scene* & Указатель на объект сцены, содержащий все объекты для отображения. \\ \hline
+    shader & Shader* & Указатель на объект шейдера, используемый для рендеринга объектов сцены. \\ \hline
+    \multicolumn{3}{|l|}{Публичные поля} \\ \hline
+    camera & Camera & Объект камеры, определяющий точку обзора и параметры проекции. \\ \hline
+    \multicolumn{3}{|l|}{Методы} \\ \hline
+    Renderer(int width, int height) & конструктор & Конструктор класса. Инициализирует размеры области рендеринга и камеру. \\ \hline
+    getScene() & Scene* & Возвращает указатель на текущую сцену. \\ \hline
+    setScene(Scene* scene) & void & Устанавливает активную сцену для рендеринга. \\ \hline
+    setShader(const char* vertexPath, const char* fragmentPath) & void & Загружает и устанавливает шейдерную программу по путям к вершинному и фрагментному шейдерам. \\ \hline
+    draw(unsigned long ticks) & void & Выполняет отрисовку одного кадра. ticks -- текущее время в миллисекундах. \\ \hline
+\end{xltabular}
+
+Вспомогательная функция \texttt{initRenderer(int width, int height)} (определена в \texttt{Renderer.h}) создает и возвращает указатель на новый экземпляр класса \texttt{Renderer}, инициализированный с заданной шириной и высотой.
+
+\subsubsection{Управление окном и главный цикл}
+Функциональность, связанная с созданием окна приложения, управлением главным циклом и уничтожением окна, сосредоточена в заголовочном файле \texttt{Window.h}. Этот модуль не определяет отдельный класс, а предоставляет набор функций и перечисление для кодов ошибок. Он также объявляет глобальный указатель на объект рендерера.
+
+\paragraph{Перечисление WindowError}
+Перечисление \texttt{WindowError} определяет константы для кодов ошибок, которые могут возникнуть при операциях с окном.
+
+Спецификация перечисления WindowError представлена в таблице \ref{tab:windowerror_spec}.
+
+\begin{xltabular}{\textwidth}{|l|X|}
+    \caption{Спецификация перечисления WindowError\label{tab:windowerror_spec}}\\ \hline
+    \centrow Значение & \centrow Описание \\ \hline
+    \endfirsthead
+    \continuecaption{Продолжение таблицы \ref{tab:windowerror_spec}}
+    \centrow Значение & \centrow Описание \\ \hline 
+    \finishhead
+    WINDOW\_ALREADY\_EXISTS & Окно уже было создано. \\ \hline
+    WINDOW\_CREATE\_FAILED & Не удалось создать окно SDL. \\ \hline
+    GL\_CONTEXT\_CREATE\_FAILED & Не удалось создать контекст OpenGL. \\ \hline
+    RENDERER\_INIT\_FAILED & Не удалось инициализировать рендерер. \\ \hline
+\end{xltabular}
+
+\paragraph{Функции управления окном}
+Набор функций для управления жизненным циклом окна и приложения.
+
+Спецификация функций управления окном представлена в таблице \ref{tab:windowfuncs_spec}.
+
+\begin{xltabular}{\textwidth}{|X|l|X|}
+    \caption{Спецификация функций управления окном\label{tab:windowfuncs_spec}}\\ \hline
+    \centrow Функция & \centrow Возвращаемый тип & \centrow Описание \\ \hline
+    \endfirsthead
+    \continuecaption{Продолжение таблицы \ref{tab:windowfuncs_spec}}
+    \centrow Функция & \centrow Возвращаемый тип & \centrow Описание \\ \hline 
+    \finishhead
+    createWindow(const char* title, int width = 0, int height = 0) & int & Инициализирует SDL, создает окно приложения и контекст OpenGL. \texttt{title} - заголовок окна. \texttt{width} и \texttt{height} - размеры окна; если 0, используется полноэкранный режим. Возвращает 0 при успехе или код ошибки из \texttt{WindowError} при неудаче. \\ \hline
+    mainLoop() & void & Запускает главный цикл приложения. В цикле обрабатываются события ввода, обновляется состояние сцены и происходит отрисовка с помощью объекта \texttt{renderer}. Цикл продолжается до тех пор, пока не будет получен сигнал о закрытии окна. \\ \hline
+    destroyWindow() & void & Уничтожает окно SDL, контекст OpenGL и освобождает ресурсы, связанные с рендерером и SDL. Должна вызываться перед завершением работы приложения. \\ \hline
+\end{xltabular}
+
+\subsubsection{Структура SceneNode}
+Структура \texttt{SceneNode} представляет собой отдельный объект (узел) в трехмерной сцене. Она содержит информацию о геометрии объекта, его трансформациях (позиция, поворот, масштаб), материале и текстурах.
+
+Спецификация структуры SceneNode представлена в таблице \ref{tab:scenenode_spec}.
+
+\begin{xltabular}{\textwidth}{|l|l|X|}
+    \caption{Спецификация структуры SceneNode\label{tab:scenenode_spec}}\\ \hline
+    \centrow Поле & \centrow Тип & \centrow Описание \\ \hline
+    \endfirsthead
+    \continuecaption{Продолжение таблицы \ref{tab:scenenode_spec}}
+    \centrow Поле & \centrow Тип & \centrow Описание \\ \hline 
+    \finishhead
+    mesh & Mesh* & Указатель на объект геометрии (меш). \\ \hline
+    position & glm::vec3 & Позиция объекта в мировых координатах. Значение по умолчанию: (0,0,0). \\ \hline
+    rotation & glm::vec3 & Углы поворота объекта вокруг осей X, Y, Z в градусах. Значение по умолчанию: (0,0,0). \\ \hline
+    scale & glm::vec3 & Масштаб объекта по осям X, Y, Z. Значение по умолчанию: (1,1,1). \\ \hline
+    shininess & float & Коэффициент блеска материала объекта. Используется в модели освещения Фонга. Значение по умолчанию: 32.0. \\ \hline
+    distort & bool & Флаг, указывающий, нужно ли применять эффект искажения к текстуре объекта. Значение по умолчанию: false. \\ \hline
+    texturePath & std::string & Путь к файлу основной текстуры объекта (diffuse map). \\ \hline
+    specularPath & std::string & Путь к файлу текстуры для карты отражений (specular map). \\ \hline
+\end{xltabular}
+
+\subsubsection{Структура CameraNode}
+Структура \texttt{CameraNode} используется для хранения конфигурации камеры в контексте сцены. Эта структура предназначена для упрощения сериализации параметров камеры при инициализации сцены. Она дублирует некоторые поля класса \texttt{Camera}, но служит для описания начального состояния камеры в сцене.
+
+Спецификация структуры CameraNode представлена в таблице \ref{tab:cameranode_spec}.
+
+\begin{xltabular}{\textwidth}{|l|l|X|}
+    \caption{Спецификация структуры CameraNode\label{tab:cameranode_spec}}\\ \hline
+    \centrow Поле & \centrow Тип & \centrow Описание \\ \hline
+    \endfirsthead
+    \continuecaption{Продолжение таблицы \ref{tab:cameranode_spec}}
+    \centrow Поле & \centrow Тип & \centrow Описание \\ \hline 
+    \finishhead
+    position & glm::vec3 & Начальная позиция камеры в мировых координатах. Значение по умолчанию: (0,0,0). \\ \hline
+    rotation & glm::vec3 & Начальные углы поворота камеры вокруг осей X, Y, Z в градусах. Значение по умолчанию: (0,0,0). \\ \hline
+    fov & float & Угол обзора камеры (Field of View) в градусах. Значение по умолчанию: 45.0. \\ \hline
+\end{xltabular}
+
+\subsubsection{Структура DirLight}
+Структура \texttt{DirLight} описывает параметры направленного источника света в сцене.
+
+Спецификация структуры DirLight представлена в таблице \ref{tab:dirlight_spec}.
+
+\begin{xltabular}{\textwidth}{|l|l|X|}
+    \caption{Спецификация структуры DirLight\label{tab:dirlight_spec}}\\ \hline
+    \centrow Поле & \centrow Тип & \centrow Описание \\ \hline
+    \endfirsthead
+    \continuecaption{Продолжение таблицы \ref{tab:dirlight_spec}}
+    \centrow Поле & \centrow Тип & \centrow Описание \\ \hline 
+    \finishhead
+    direction & glm::vec3 & Вектор направления света. \\ \hline
+    ambient & glm::vec3 & Интенсивность окружающего света. Компоненты (R,G,B) в диапазоне [0,1]. \\ \hline
+    diffuse & glm::vec3 & Интенсивность диффузного света. Компоненты (R,G,B) в диапазоне [0,1]. \\ \hline
+    specular & glm::vec3 & Интенсивность зеркального света. Компоненты (R,G,B) в диапазоне [0,1]. \\ \hline
+\end{xltabular}
+
+\subsubsection{Структура PointLight}
+Структура \texttt{PointLight} описывает параметры точечного источника света. Точечный свет излучается из одной точки во всех направлениях, и его интенсивность убывает с расстоянием.
+
+Спецификация структуры PointLight представлена в таблице \ref{tab:pointlight_spec}.
+
+\begin{xltabular}{\textwidth}{|l|l|X|}
+    \caption{Спецификация структуры PointLight\label{tab:pointlight_spec}}\\ \hline
+    \centrow Поле & \centrow Тип & \centrow Описание \\ \hline
+    \endfirsthead
+    \continuecaption{Продолжение таблицы \ref{tab:pointlight_spec}}
+    \centrow Поле & \centrow Тип & \centrow Описание \\ \hline 
+    \finishhead
+    position & glm::vec3 & Позиция источника света в мировых координатах. \\ \hline
+    constant & float & Константный коэффициент затухания интенсивности света. \\ \hline
+    linear & float & Линейный коэффициент затухания интенсивности света. \\ \hline
+    quadratic & float & Квадратичный коэффициент затухания интенсивности света. \\ \hline
+    ambient & glm::vec3 & Цвет окружающего света. \\ \hline
+    diffuse & glm::vec3 & Цвет диффузного света. \\ \hline
+    specular & glm::vec3 & Цвет зеркального света. \\ \hline
+\end{xltabular}
+
+\subsubsection{Класс Camera}
+Класс Camera отвечает за управление виртуальной камерой в трехмерном пространстве. Он предоставляет методы для установки и получения позиции и ориентации камеры, вычисления матриц вида и проекции, а также для относительного перемещения и вращения. Камера использует библиотеку GLM для математических операций.
+
+Спецификация класса Camera представлена в таблице \ref{tab:camera_spec}.
+
+\begin{xltabular}{\textwidth}{|X|l|X|}
+    \caption{Спецификация класса Camera\label{tab:camera_spec}}\\ \hline
+    \centrow Поле/Метод & \centrow Тип & \centrow Описание \\ \hline
+    \endfirsthead
+    \continuecaption{Продолжение таблицы \ref{tab:camera_spec}}
     \centrow Поле/Метод & \centrow Тип & \centrow Описание \\ \hline 
     \finishhead
 
     \multicolumn{3}{|l|}{Поля} \\ \hline
-    sdl\_window & SDL\_Window* & Указатель на структуру окна SDL2. Используется для непосредственного взаимодействия с оконной системой. \\
-    \hline
-    sdl\_glcontext & SDL\_GLContext & Контекст OpenGL, связанный с окном. Необходим для выполнения команд OpenGL. \\
-    \hline
-    width & int & Ширина окна в пикселях. \\
-    \hline
-    height & int & Высота окна в пикселях. \\
-    \hline
-    title & std::string & Заголовок окна, отображаемый в операционной системе. \\
-    \hline
-    shader & Shader* & Указатель на объект шейдера, используемый для рендеринга объектов сцены. \\
-    \hline
-    scene & Scene* & Указатель на объект сцены, содержащий все объекты для отображения. \\
-    \hline
-    camera & Camera & Объект камеры, определяющий точку обзора и параметры проекции. \\
-    \hline
+    position & glm::vec3 & Позиция камеры в мировых координатах. \\ \hline
+    fov & float & Угол обзора (поле зрения) камеры в градусах. \\ \hline
+    w & int & Ширина окна отрисовки, используется для расчета матрицы проекции. \\ \hline
+    h & int & Высота окна отрисовки, используется для расчета матрицы проекции. \\ \hline
+    front & glm::vec3 & (Приватное) Вектор, указывающий направление камеры. \\ \hline
+    up & glm::vec3 & (Приватное) Вектор, указывающий "верх" для камеры. \\ \hline
     \multicolumn{3}{|l|}{Методы} \\ \hline
-    RE\_Window(std::string title, int width, int height) & конструктор & Конструктор класса. Инициализирует поля title, width и height. \\
-    \hline
-    \textasciitilde RE\_Window() & деструктор & Деструктор класса. Освобождает ресурсы, связанные с окном SDL2 и контекстом OpenGL. \\
-    \hline
-    getSDL\_Window() & SDL\_Window* & Возвращает указатель на окно SDL2. \\
-    \hline
-    getSDL\_GLContext() & SDL\_GLContext & Возвращает контекст OpenGL. \\
-    \hline
-    Init() & int & Инициализирует окно SDL2 и контекст OpenGL. Создает окно с заданными параметрами и настраивает OpenGL для рендеринга. Возвращает 0 при успехе. \\
-    \hline
-    Draw(double deltaTime) & void & Выполняет отрисовку одного кадра. Очищает буферы, устанавливает параметры рендеринга и вызывает методы отрисовки для объектов сцены. deltaTime — время, прошедшее с предыдущего кадра. \\
-    \hline
+    Camera(int width, int height) & конструктор & Конструктор. Инициализирует камеру с указанной шириной и высотой окна. \\ \hline
+    setRotation(float rx, float ry, float rz) & void & Устанавливает углы поворота камеры по осям X, Y, Z (в градусах). \\ \hline
+    getRotation() const & std::tuple<float, float, float> & Возвращает текущие углы поворота камеры по осям X, Y, Z (в градусах). \\ \hline
+    getViewMatrix() const & glm::mat4 & Вычисляет и возвращает матрицу вида (view matrix). \\ \hline
+    getProjectionMatrix() const & glm::mat4 & Вычисляет и возвращает матрицу проекции (projection matrix). \\ \hline
+    moveRelative(float dx, float dy, float dz) & void & Перемещает камеру относительно ее текущей ориентации на заданные смещения. \\ \hline
+    rotateRelative(float drx, float dry, float drz) & void & Поворачивает камеру относительно ее текущей ориентации на заданные углы (в градусах). \\ \hline
+\end{xltabular}
+
+\subsubsection{Структура Scene}
+Структура \texttt{Scene} является контейнером для всех элементов, составляющих трехмерную сцену. Она объединяет информацию об объектах, камере, источниках света и других параметрах окружения.
+
+Спецификация структуры Scene представлена в таблице \ref{tab:scene_spec}.
+
+\begin{xltabular}{\textwidth}{|l|l|X|}
+    \caption{Спецификация структуры Scene\label{tab:scene_spec}}\\ \hline
+    \centrow Поле & \centrow Тип & \centrow Описание \\ \hline
+    \endfirsthead
+    \continuecaption{Продолжение таблицы \ref{tab:scene_spec}}
+    \centrow Поле & \centrow Тип & \centrow Описание \\ \hline 
+    \finishhead
+    nodes & std::vector<SceneNode> & Список всех объектов (узлов) в сцене. \\ \hline
+    camera & CameraNode & Конфигурация камеры сцены. \\ \hline
+    skyColor & glm::vec3 & Цвет неба (фона) сцены. Компоненты (R,G,B) в диапазоне [0,1]. Значение по умолчанию: (0.63, 0.63, 0.85). \\ \hline
+    dirLight & DirLight & Параметры направленного источника света в сцене. \\ \hline
+    pointLights & std::vector<PointLight> & Список точечных источников света в сцене. \\ \hline
+\end{xltabular}
+
+\subsubsection{Перечисление MeshType}
+Перечисление \texttt{MeshType} определяет типы геометрических примитивов, которые могут быть использованы в сцене:
+
+\begin{itemize}
+    \item \texttt{Cube} -- кубический примитив;
+    \item \texttt{Sphere} -- сферический примитив;
+    \item \texttt{Custom} -- пользовательский примитив.
+\end{itemize}
+
+\subsubsection{Абстрактный класс Mesh}
+Абстрактный класс \texttt{Mesh} представляет собой базовый интерфейс для всех геометрических объектов (мешей) в сцене. Он определяет общие операции, которые должны быть реализованы всеми конкретными типами мешей, такие как отрисовка. Класс также может содержать указатели на текстуры, используемые мешем.
+
+Спецификация класса Mesh представлена в таблице \ref{tab:mesh_spec}.
+
+\begin{xltabular}{\textwidth}{|X|l|X|}
+    \caption{Спецификация абстрактного класса Mesh\label{tab:mesh_spec}}\\ \hline
+    \centrow Поле/Метод & \centrow Тип & \centrow Описание \\ \hline
+    \endfirsthead
+    \continuecaption{Продолжение таблицы \ref{tab:mesh_spec}}
+    \centrow Поле & \centrow Тип & \centrow Описание \\ \hline 
+    \finishhead
+    \multicolumn{3}{|l|}{Публичные поля} \\ \hline
+    texture & Texture* & Указатель на основную текстуру объекта (diffuse map). Значение по умолчанию: \texttt{nullptr}. \\ \hline
+    specularTexture & Texture* & Указатель на текстуру карты отражений (specular map). Значение по умолчанию: \texttt{nullptr}. \\ \hline
+    \multicolumn{3}{|l|}{Публичные методы} \\ \hline
+    \textasciitilde Mesh() & виртуальный деструктор & Виртуальный деструктор для корректного освобождения ресурсов в производных классах. Реализация по умолчанию. \\ \hline
+    draw(const Shader\& shader) & virtual void = 0 & Чисто виртуальный метод для отрисовки меша. Должен быть переопределен в производных классах. Принимает ссылку на используемый шейдер. \\ \hline
+\end{xltabular}
+
+\subsubsection{Класс CubeMesh}
+Класс \texttt{CubeMesh} является производным от абстрактного класса \texttt{Mesh} и предназначен для создания и отрисовки стандартного трехмерного куба. Он инкапсулирует данные о вершинах, индексах и объектах буферов OpenGL, необходимых для рендеринга куба.
+
+Спецификация класса CubeMesh представлена в таблице \ref{tab:cubemesh_spec}.
+
+\begin{xltabular}{\textwidth}{|l|l|X|}
+    \caption{Спецификация класса CubeMesh\label{tab:cubemesh_spec}}\\ \hline
+    \centrow Поле/Метод & \centrow Тип & \centrow Описание \\ \hline
+    \endfirsthead
+    \continuecaption{Продолжение таблицы \ref{tab:cubemesh_spec}}
+    \centrow Поле/Метод & \centrow Тип & \centrow Описание \\ \hline 
+    \finishhead
+    \multicolumn{3}{|l|}{Приватные поля} \\ \hline
+    VAO & unsigned int & Идентификатор объекта вершинного массива (Vertex Array Object) OpenGL. Хранит конфигурацию атрибутов вершин. \\ \hline
+    VBO & unsigned int & Идентификатор объекта вершинного буфера (Vertex Buffer Object) OpenGL. Хранит данные о вершинах куба (координаты, нормали, текстурные координаты). \\ \hline
+    EBO & unsigned int & Идентификатор объекта индексного буфера (Element Buffer Object) OpenGL. Хранит индексы вершин для формирования граней куба. \\ \hline
+    \multicolumn{3}{|l|}{Публичные методы} \\ \hline
+    CubeMesh() & конструктор & Конструктор класса. Инициализирует буферы VAO, VBO, EBO и загружает в них данные вершин куба. \\ \hline
+    \textasciitilde CubeMesh() & деструктор & Деструктор класса. Освобождает ресурсы OpenGL, связанные с VAO, VBO и EBO. \\ \hline
+    draw(const Shader\& shader) & void override & Метод для отрисовки куба. Привязывает VAO, текстуры (если есть) и вызывает команду отрисовки OpenGL. Переопределяет метод базового класса \texttt{Mesh}. \\ \hline
+\end{xltabular}
+
+\subsubsection{Класс SphereMesh}
+Класс \texttt{SphereMesh} является производным от абстрактного класса \texttt{Mesh} и предназначен для создания и отрисовки трехмерной сферы. Он генерирует вершины и индексы для аппроксимации сферической поверхности с заданным количеством горизонтальных и вертикальных сегментов и управляет соответствующими буферами OpenGL.
+
+Спецификация класса SphereMesh представлена в таблице \ref{tab:spheremesh_spec}.
+
+\begin{xltabular}{\textwidth}{|X|l|X|}
+    \caption{Спецификация класса SphereMesh\label{tab:spheremesh_spec}}\\ \hline
+    \centrow Поле/Метод & \centrow Тип & \centrow Описание \\ \hline
+    \endfirsthead
+    \continuecaption{Продолжение таблицы \ref{tab:spheremesh_spec}}
+    \centrow Поле/Метод & \centrow Тип & \centrow Описание \\ \hline 
+    \finishhead
+    \multicolumn{3}{|l|}{Приватные поля} \\ \hline
+    VAO & unsigned int & Идентификатор объекта вершинного массива (Vertex Array Object) OpenGL. \\ \hline
+    VBO & unsigned int & Идентификатор объекта вершинного буфера (Vertex Buffer Object) OpenGL. Хранит данные о вершинах сферы. \\ \hline
+    EBO & unsigned int & Идентификатор объекта индексного буфера (Element Buffer Object) OpenGL. Хранит индексы вершин для формирования граней сферы. \\ \hline
+    indexSize & unsigned int & Количество индексов, используемых для отрисовки сферы. \\ \hline
+    \multicolumn{3}{|l|}{Публичные методы} \\ \hline
+    SphereMesh(int vslices = 10, int hslices = 10) & конструктор & Конструктор класса. Инициализирует буферы VAO, VBO, EBO и загружает в них данные вершин сферы, сгенерированные на основе количества вертикальных (\texttt{vslices}) и горизонтальных (\texttt{hslices}) сегментов. Значения по умолчанию: 10 для обоих параметров. \\ \hline
+    \textasciitilde SphereMesh() & деструктор & Деструктор класса. Освобождает ресурсы OpenGL, связанные с VAO, VBO и EBO. \\ \hline
+    draw(const Shader\& shader) & void override & Метод для отрисовки сферы. Привязывает VAO, текстуры (если есть) и вызывает команду отрисовки OpenGL. Переопределяет метод базового класса \texttt{Mesh}. \\ \hline
+\end{xltabular}
+
+\subsubsection{Класс Shader}
+Класс \texttt{Shader} инкапсулирует логику загрузки, компиляции, связывания и использования шейдерных программ в OpenGL. Он позволяет загружать вершинные и фрагментные шейдеры из файлов или использовать встроенные по умолчанию, а также предоставляет удобные методы для установки uniform-переменных различных типов.
+
+Спецификация класса Shader представлена в таблице \ref{tab:shader_spec}.
+
+\begin{xltabular}{\textwidth}{|X|l|X|}
+    \caption{Спецификация класса Shader\label{tab:shader_spec}}\\ \hline
+    \centrow Поле/Метод & \centrow Тип & \centrow Описание \\ \hline
+    \endfirsthead
+    \continuecaption{Продолжение таблицы \ref{tab:shader_spec}}
+    \centrow Поле/Метод & \centrow Тип & \centrow Описание \\ \hline 
+    \finishhead
+    \multicolumn{3}{|l|}{Публичные поля} \\ \hline
+    ID & unsigned int & Идентификатор скомпилированной и связанной шейдерной программы OpenGL. \\ \hline
+    \multicolumn{3}{|l|}{Публичные методы} \\ \hline
+    Shader(const char* vertexPath = NULL, const char* fragmentPath = NULL) & конструктор & Конструктор класса. Загружает, компилирует и связывает вершинный и фрагментный шейдеры. \texttt{vertexPath} - путь к файлу вершинного шейдера, \texttt{fragmentPath} - путь к файлу фрагментного шейдера. Если пути не указаны (NULL), используются встроенные шейдеры по умолчанию. \\ \hline
+    use() & void & Активирует данную шейдерную программу для использования в текущем контексте рендеринга OpenGL. \\ \hline
+    setBool(const std::string \&name, bool value) const & void & Устанавливает значение uniform-переменной типа boolean в шейдере. \texttt{name} - имя переменной, \texttt{value} - значение. \\ \hline
+    setInt(const std::string \&name, int value) const & void & Устанавливает значение uniform-переменной типа int в шейдере. \texttt{name} - имя переменной, \texttt{value} - значение. \\ \hline
+    setFloat(const std::string \&name, float value) const & void & Устанавливает значение uniform-переменной типа float в шейдере. \texttt{name} - имя переменной, \texttt{value} - значение. \\ \hline
+    setMat4(const std::string \&name, const glm::mat4 \&mat) const & void & Устанавливает значение uniform-переменной типа mat4 (матрица 4x4) в шейдере. \texttt{name} - имя переменной, \texttt{mat} - матрица. \\ \hline
+    setVec3(const std::string \&name, const glm::vec3 \&value) const & void & Устанавливает значение uniform-переменной типа vec3 (вектор из 3-х компонентов) в шейдере. \texttt{name} - имя переменной, \texttt{value} - вектор. \\ \hline
+    isValid() const & bool & Проверяет, была ли шейдерная программа успешно скомпилирована и связана. Возвращает \texttt{true}, если \texttt{ID != 0}, иначе \texttt{false}. \\ \hline
+    \multicolumn{3}{|l|}{Приватные методы} \\ \hline
+    checkCompileErrors(unsigned int shader, std::string type) & void & Вспомогательный метод для проверки ошибок компиляции или связывания шейдеров. \texttt{shader} - идентификатор объекта шейдера или программы, \texttt{type} - строка, указывающая тип проверяемого объекта ("VERTEX", "FRAGMENT" или "PROGRAM"). \\ \hline
 \end{xltabular}
 
 \subsubsection{Класс Texture}
@@ -222,203 +493,75 @@ GLM применяется в движке для упрощения таких 
     \continuecaption{Продолжение таблицы \ref{tab:texture_spec}}
     \centrow Поле/Метод & \centrow Тип & \centrow Описание \\ \hline 
     \finishhead
-
-    \multicolumn{3}{|l|}{Поля} \\ \hline
-    textureID & unsigned int & Идентификатор текстурного объекта OpenGL. Используется для привязки и управления текстурой в графическом конвейере. \\
-    \hline
-    width & int & Ширина загруженной текстуры в пикселях. \\
-    \hline
-    height & int & Высота загруженной текстуры в пикселях. \\
-    \hline
-    bpp & int & Количество битов на пиксель в загруженной текстуре. \\
-    \hline
-    textures & static std::unordered\_map <std::string, Texture*> & Статический ассоциативный массив (кеш) для хранения загруженных текстур. Ключом является путь к файлу текстуры. \\
-    \hline
-    \multicolumn{3}{|l|}{Методы} \\ \hline
-    Texture() & конструктор & Конструктор по умолчанию. Инициализирует поля значениями по умолчанию. \\
-    \hline
-    Texture(const std::string\& path) & конструктор & Конструктор, загружающий текстуру из указанного файла BMP. \\
-    \hline
-    \textasciitilde Texture() & деструктор & Деструктор класса. Освобождает ресурсы, связанные с текстурным объектом OpenGL. \\
-    \hline
-    loadBMP(const std::string\& path) & bool & Загружает текстуру из файла BMP. Возвращает true при успешной загрузке. \\
-    \hline
-    bind() & void & Привязывает текстуру (делает ее активной) для использования в последующих операциях рендеринга. \\
-    \hline
-    unbind() & static void & Отвязывает текущую активную текстуру. \\
-    \hline
-    isValid() & bool & Проверяет, была ли текстура успешно загружена и инициализирована (textureID $\neq$ 0). \\
-    \hline
-    getWidth() & int & Возвращает ширину текстуры. \\
-    \hline
-    getHeight() & int & Возвращает высоту текстуры. \\
-    \hline
-    clear() & void & Приватный метод для очистки данных текстуры и освобождения ресурсов OpenGL. \\
-    \hline
+    \multicolumn{3}{|l|}{Приватные поля} \\ \hline
+    textureID & unsigned int & Идентификатор текстурного объекта OpenGL. Используется для привязки и управления текстурой в графическом конвейере. \\ \hline
+    width & int & Ширина загруженной текстуры в пикселях. \\ \hline
+    height & int & Высота загруженной текстуры в пикселях. \\ \hline
+    bpp & int & Количество битов на пиксель в загруженной текстуре. \\ \hline
+    \multicolumn{3}{|l|}{Статические публичные поля} \\ \hline
+    textures & static std::unordered\_map <std::string, Texture*> & Статический ассоциативный массив (кеш) для хранения загруженных текстур. Ключом является путь к файлу текстуры. \\ \hline
+    \multicolumn{3}{|l|}{Публичные методы} \\ \hline
+    Texture() & конструктор & Конструктор по умолчанию. \\ \hline
+    Texture(const std::string\& path) & конструктор & Конструктор, загружающий текстуру из указанного файла BMP с помощью метода \texttt{loadBMP}. \\ \hline
+    \textasciitilde Texture() & деструктор & Деструктор класса. Освобождает ресурсы, связанные с текстурным объектом OpenGL, вызывая \texttt{clear()}. \\ \hline
+    loadBMP(const std::string\& path) & bool & Загружает текстуру из файла формата BMP. Читает заголовки BMP, извлекает данные пикселей и вызывает \texttt{loadToGL} для загрузки в OpenGL. Возвращает \texttt{true} при успешной загрузке, иначе \texttt{false}. \\ \hline
+    genFromColor(float r, float g, float b) & bool & Генерирует простую одноцветную текстуру размером 1x1 пиксель. \texttt{r, g, b} - компоненты цвета в диапазоне [0.0, 1.0]. Вызывает \texttt{loadToGL}. Возвращает \texttt{true} при успехе. \\ \hline
+    bind() const & void & Привязывает текстуру (делает ее активной на текстурном юните 0) для использования в последующих операциях рендеринга. \\ \hline
+    isValid() const & bool & Проверяет, была ли текстура успешно загружена и инициализирована (\texttt{textureID != 0}). \\ \hline
+    getWidth() const & int & Возвращает ширину текстуры в пикселях. \\ \hline
+    getHeight() const & int & Возвращает высоту текстуры в пикселях. \\ \hline
+    \multicolumn{3}{|l|}{Статические публичные методы} \\ \hline
+    unbind() & static void & Отвязывает текущую активную текстуру от текстурного юнита 0. \\ \hline
+    \multicolumn{3}{|l|}{Приватные методы} \\ \hline
+    loadToGL(std::vector <unsigned char>\& rgbData, int minFilter, int magFilter) & void & Загружает данные пикселей \texttt{rgbData} в объект текстуры OpenGL. Устанавливает параметры фильтрации (\texttt{minFilter}, \texttt{magFilter}) и режим повторения. \\ \hline
+    clear() & void & Освобождает ресурсы текстурного объекта OpenGL, если он был создан (\texttt{textureID != 0}). \\ \hline
 \end{xltabular}
 
-\subsubsection{Класс Shader}
-Класс Shader инкапсулирует логику работы с шейдерными программами в OpenGL. Он отвечает за загрузку исходного кода вершинного и фрагментного шейдеров из файлов, их компиляцию и последующую линковку в единую шейдерную программу. Кроме того, класс предоставляет удобные методы для активации шейдерной программы и установки значений uniform-переменных различных типов (bool, int, float, vec3, mat4), которые используются для передачи данных из основного приложения в шейдеры во время рендеринга.
+\subsubsection{Класс InputHandler}
+Класс InputHandler представляет собой статический класс, отвечающий за обработку пользовательского ввода от клавиатуры и мыши. Он использует библиотеку SDL2 для получения событий и предоставляет интерфейс для регистрации callback-функций на различные события ввода, такие как нажатие, отпускание и удержание клавиш, движение мыши, нажатие кнопок мыши и прокрутка колесика. Класс также хранит текущее состояние клавиш и позицию мыши.
 
-Спецификация класса Shader представлена в таблице \ref{tab:shader_spec}.
+Спецификация класса InputHandler представлена в таблице \ref{tab:inputhandler_spec}.
 
-\begin{xltabular}{\textwidth}{|X|l|X|}
-    \caption{Спецификация класса Shader\label{tab:shader_spec}}\\ \hline
+\begin{xltabular}{\textwidth}{|X|X|X|}
+    \caption{Спецификация класса InputHandler\label{tab:inputhandler_spec}}\\ \hline
     \centrow Поле/Метод & \centrow Тип & \centrow Описание \\ \hline
     \endfirsthead
-    \continuecaption{Продолжение таблицы \ref{tab:shader_spec}}
+    \continuecaption{Продолжение таблицы \ref{tab:inputhandler_spec}}
     \centrow Поле/Метод & \centrow Тип & \centrow Описание \\ \hline 
     \finishhead
 
-    \multicolumn{3}{|l|}{Поля} \\ \hline
-    ID & unsigned int & Идентификатор скомпилированной и слинкованной шейдерной программы OpenGL. \\
-    \hline
-    \multicolumn{3}{|l|}{Методы} \\ \hline
-    Shader(const char* vertexPath, const char* fragmentPath) & конструктор & Конструктор класса. Загружает, компилирует и линкует вершинный и фрагментный шейдеры по указанным путям к файлам. Сохраняет идентификатор программы в поле ID. \\
-    \hline
-    use() & void & Активирует данную шейдерную программу для использования в последующих операциях рендеринга. \\
-    \hline
-    setBool(const std::string \&name, bool value) const & void & Устанавливает значение uniform-переменной типа bool в шейдере. \\
-    \hline
-    setInt(const std::string \&name, int value) const & void & Устанавливает значение uniform-переменной типа int в шейдере. \\
-    \hline
-    setFloat(const std::string \&name, float value) const & void & Устанавливает значение uniform-переменной типа float в шейдере. \\
-    \hline
-    setMat4(const std::string \&name, const glm::mat4 \&mat) const & void & Устанавливает значение uniform-переменной типа mat4 (матрица 4x4) в шейдере. \\
-    \hline
-    setVec3(const std::string \&name, const glm::vec3 \&value) const & void & Устанавливает значение uniform-переменной типа vec3 (3D вектор) в шейдере. \\
-    \hline
-    isValid() const & bool & Проверяет, была ли шейдерная программа успешно скомпилирована и слинкована (ID $\neq$ 0). \\
-    \hline
-    checkCompileErrors(unsigned int shader, std::string type) & void & Приватный метод для проверки ошибок компиляции или линковки шейдера/программы и вывода информации об ошибке. \\
-    \hline
+    \multicolumn{3}{|l|}{Типы данных (using)} \\ \hline
+    KeyCallback & std::function<void()> & Тип для callback-функции при нажатии/отпускании клавиши. \\ \hline
+    HoldKeyCallback & std::function<void(float)> & Тип для callback-функции при удержании клавиши (аргумент - deltaTime). \\ \hline
+    MouseMotionCallback & std::function<void(int, int, int, int)> & Тип для callback-функции при движении мыши (x, y, xrel, yrel). \\ \hline
+    MouseButtonCallback & std::function<void(int, int, int)> & Тип для callback-функции при нажатии/отпускании кнопки мыши (x, y, button). \\ \hline
+    MouseWheelCallback & std::function<void(int, int)> & Тип для callback-функции при прокрутке колесика мыши (x, y смещения). \\ \hline
+    \multicolumn{3}{|l|}{Статические поля (приватные)} \\ \hline
+    keyStates\_ & std::unordered \_map<SDL\_Keycode, bool> & Хранит текущее состояние клавиш (нажата/отпущена). \\ \hline
+    keyDownCallbacks\_ & std::unordered \_map<SDL\_Keycode, KeyCallback> & Карта callback-функций для события нажатия клавиши. \\ \hline
+    keyUpCallbacks\_ & std::unordered \_map<SDL\_Keycode, KeyCallback> & Карта callback-функций для события отпускания клавиши. \\ \hline
+    keyHoldCallbacks\_ & std::unordered \_map<SDL\_Keycode, HoldKeyCallback> & Карта callback-функций для события удержания клавиши. \\ \hline
+    mouseButtonDown\-Callbacks\_ & std::unordered \_map<Uint8, MouseButtonCallback> & Карта callback-функций для события нажатия кнопки мыши. \\ \hline
+    mouseButtonUp\-Callbacks\_ & std::unordered \_map<Uint8, MouseButtonCallback> & Карта callback-функций для события отпускания кнопки мыши. \\ \hline
+    mouseMotionCallback\_ & MouseMotionCallback & Callback-функция для события движения мыши. \\ \hline
+    mouseWheelCallback\_ & MouseWheelCallback & Callback-функция для события прокрутки колесика мыши. \\ \hline
+    mousePosition\_ & glm::vec2 & Текущая позиция курсора мыши. \\ \hline
+    mouseRelativeMotion\_ & glm::vec2 & Относительное смещение мыши с последнего кадра. \\ \hline
+    \multicolumn{3}{|l|}{Статические методы} \\ \hline
+    init() & static void & Инициализирует обработчик ввода. \\ \hline
+    handleEvent(const SDL\_Event\& event) & static bool & Обрабатывает входящее событие SDL. Возвращает true, если событие было обработано. \\ \hline
+    update(float deltaTime) & static void & Обновляет состояние ввода, вызывает callback-функции для удерживаемых клавиш. deltaTime - время с прошлого кадра. \\ \hline
+    setKeyDownCallback (SDL\_Keycode key, KeyCallback callback) & static void & Устанавливает callback-функцию для события нажатия указанной клавиши. \\ \hline
+    setKeyUpCallback (SDL\_Keycode key, KeyCallback callback) & static void & Устанавливает callback-функцию для события отпускания указанной клавиши. \\ \hline
+    setKeyHoldCallback (SDL\_Keycode key, HoldKeyCallback callback) & static void & Устанавливает callback-функцию для события удержания указанной клавиши. \\ \hline
+    setMouseMotionCallback (MouseMotionCallback callback) & static void & Устанавливает callback-функцию для события движения мыши. \\ \hline
+    setMouseButtonDown\-Callback (Uint8 button, MouseButtonCallback callback) & static void & Устанавливает callback-функцию для события нажатия указанной кнопки мыши. \\ \hline
+    setMouseButtonUp\-Callback (Uint8 button, MouseButtonCallback callback) & static void & Устанавливает callback-функцию для события отпускания указанной кнопки мыши. \\ \hline
+    setMouseWheelCallback (MouseWheelCallback callback) & static void & Устанавливает callback-функцию для события прокрутки колесика мыши. \\ \hline
+    isKeyDown (SDL\_Keycode key) & static bool & Проверяет, нажата ли указанная клавиша в данный момент. \\ \hline
+    getMousePosition() & static glm::vec2 & Возвращает текущую позицию курсора мыши. \\ \hline
+    getMouseRelativeMotion () & static glm::vec2 & Возвращает относительное смещение мыши с последнего кадра. \\ \hline
 \end{xltabular}
-
-\subsubsection{Класс Mesh}
-Класс Mesh является абстрактным базовым классом, представляющим собой интерфейс для всех трехмерных геометрических объектов (примитивов), которые могут быть отрисованы в сцене. Он определяет основные операции, которые должен поддерживать каждый конкретный тип примитива: инициализацию геометрических данных (вершин, их атрибутов, индексов) и их последующую отрисовку с использованием заданной шейдерной программы. Класс также содержит указатель на объект Texture, что позволяет связывать текстуры с примитивами.
-
-Поскольку класс Mesh абстрактный, его экземпляры не могут быть созданы напрямую. Вместо этого создаются экземпляры его производных классов, таких как CubeMesh или SphereMesh, которые реализуют его чисто виртуальные методы.
-
-Спецификация класса Mesh представлена в таблице \ref{tab:mesh_spec}.
-
-\begin{xltabular}{\textwidth}{|l|l|X|}
-    \caption{Спецификация класса Mesh\label{tab:mesh_spec}}\\ \hline
-    \centrow Поле/Метод & \centrow Тип & \centrow Описание \\ \hline
-    \endfirsthead
-    \continuecaption{Продолжение таблицы \ref{tab:mesh_spec}}
-    \centrow Поле/Метод & \centrow Тип & \centrow Описание \\ \hline 
-    \finishhead
-
-    \multicolumn{3}{|l|}{Поля} \\ \hline
-    texture & Texture* & Указатель на объект текстуры, который может быть применен к данному примитиву. Если nullptr, примитив будет отрисован без текстуры или с использованием цвета по умолчанию. \\
-    \hline
-    \multicolumn{3}{|l|}{Методы} \\ \hline
-    \textasciitilde Mesh() & виртуальный деструктор & Виртуальный деструктор по умолчанию. Обеспечивает корректное освобождение ресурсов при удалении объектов производных классов через указатель на базовый класс. \\
-    \hline
-    init() & virtual void = 0 & Виртуальный метод для инициализации примитива. В производных классах здесь должна происходить загрузка вершинных данных в буферы OpenGL (VBO, VAO, EBO). \\
-    \hline
-    draw(const Shader\& shader) & virtual void = 0 & Виртуальный метод для отрисовки примитива. В производных классах здесь должны выполняться команды OpenGL для отрисовки геометрии с использованием переданного шейдера. \\
-    \hline
-\end{xltabular}
-
-\subsubsection{Класс CubeMesh}
-Класс CubeMesh является производным от абстрактного класса Mesh и предоставляет конкретную реализацию для создания и отрисовки трехмерного куба. Он отвечает за определение вершин, их атрибутов (например, позиций, текстурных координат, нормалей) и индексов, необходимых для формирования геометрии куба. В методе init() происходит создание и настройка буферных объектов OpenGL (VAO, VBO, EBO) для хранения этих данных. Метод draw() использует эти буферы для выполнения команд отрисовки куба с помощью предоставленного шейдера.
-
-Спецификация класса CubeMesh представлена в таблице \ref{tab:cubemesh_spec}.
-
-\begin{xltabular}{\textwidth}{|l|l|X|}
-    \caption{Спецификация класса CubeMesh\label{tab:cubemesh_spec}}\\ \hline
-    \centrow Поле/Метод & \centrow Тип & \centrow Описание \\ \hline
-    \endfirsthead
-    \continuecaption{Продолжение таблицы \ref{tab:cubemesh_spec}}
-    \centrow Поле/Метод & \centrow Тип & \centrow Описание \\ \hline 
-    \finishhead
-
-    \multicolumn{3}{|l|}{Поля} \\ \hline
-    VAO & unsigned int & Идентификатор объекта вершинного массива (Vertex Array Object). Хранит конфигурацию атрибутов вершин для куба. \\
-    \hline
-    VBO & unsigned int & Идентификатор объекта вершинного буфера (Vertex Buffer Object). Хранит данные о вершинах куба (координаты, текстурные координаты и т.д.). \\
-    \hline
-    EBO & unsigned int & Идентификатор объекта элементного буфера (Element Buffer Object) или индексного буфера. Хранит индексы вершин для формирования граней куба. \\
-    \hline
-    \multicolumn{3}{|l|}{Методы} \\ \hline
-    \textasciitilde CubeMesh() & деструктор & Деструктор класса. Освобождает ресурсы OpenGL, выделенные для VAO, VBO и EBO. \\
-    \hline
-    init() & void override & Реализация виртуального метода базового класса. Инициализирует геометрию куба: определяет вершины и индексы, создает и заполняет буферы VAO, VBO, EBO. \\
-    \hline
-    draw(const Shader\& shader) & void override & Реализация виртуального метода базового класса. Выполняет отрисовку куба: привязывает VAO, активирует шейдер и вызывает команду отрисовки по индексам (glDrawElements). \\
-    \hline
-\end{xltabular}
-
-\subsubsection{Класс SphereMesh}
-Класс SphereMesh наследует от абстрактного класса Mesh и отвечает за создание и отрисовку трехмерной сферы. Он генерирует вершины, текстурные координаты и индексы, необходимые для аппроксимации сферической поверхности. Точность аппроксимации (количество полигонов) может контролироваться через параметры, передаваемые в один из его методов инициализации (количество вертикальных и горизонтальных сегментов). Как и куб, SphereMesh управляет собственными буферными объектами OpenGL (VAO, VBO, EBO) для хранения геометрии и её последующей отрисовки.
-
-Спецификация класса SphereMesh представлена в таблице \ref{tab:spheremesh_spec}.
-\begin{xltabular}{\textwidth}{|l|l|X|}
-    \caption{Спецификация класса SphereMesh\label{tab:spheremesh_spec}}\\ \hline
-    \centrow Поле/Метод & \centrow Тип & \centrow Описание \\ \hline
-    \endfirsthead
-    \continuecaption{Продолжение таблицы \ref{tab:spheremesh_spec}}
-    \centrow Поле/Метод & \centrow Тип & \centrow Описание \\ \hline 
-    \finishhead
-
-    \multicolumn{3}{|l|}{Поля} \\ \hline
-    VAO & unsigned int & Идентификатор объекта вершинного массива (Vertex Array Object). Хранит конфигурацию атрибутов вершин для сферы. \\
-    \hline
-    VBO & unsigned int & Идентификатор объекта вершинного буфера (Vertex Buffer Object). Хранит данные о вершинах сферы (координаты, текстурные координаты). \\
-    \hline
-    EBO & unsigned int & Идентификатор объекта элементного буфера (Element Buffer Object). Хранит индексы вершин для формирования треугольников, составляющих сферу. \\
-    \hline
-    indexSize & unsigned int & Количество индексов, используемых для отрисовки сферы. Необходимо для вызова glDrawElements. \\
-    \hline
-    \multicolumn{3}{|l|}{Методы} \\ \hline
-    \textasciitilde SphereMesh() & деструктор & Деструктор класса. Освобождает ресурсы OpenGL, выделенные для VAO, VBO и EBO. \\
-    \hline
-    init() & void override & Реализация виртуального метода базового класса. Инициализирует геометрию сферы с параметрами по умолчанию (количество сегментов). \\
-    \hline
-    init(int vslices, int hslices) & void & Инициализирует геометрию сферы с заданным количеством вертикальных (vslices) и горизонтальных (hslices) сегментов. Создает и заполняет буферы VAO, VBO, EBO. \\
-    \hline
-    draw(const Shader\& shader) & void override & Реализация виртуального метода базового класса. Выполняет отрисовку сферы: привязывает VAO, активирует шейдер и вызывает команду glDrawElements с использованием indexSize. \\
-    \hline
-\end{xltabular}
-
-\subsection{Формат файла сцены}
-
-Движок использует формат .rem (REngine Map) для хранения сцен. Формат основан на структуре CSV-таблиц (англ. Comma Separated Values -- "значения, разделённые запятыми"), однако имеет дополнения, специфичные для работы движка. Структура файла описана в таблице \ref{tab:scene_spec}.
-
-\begin{xltabular}{\textwidth}{|l|l|X|}
-    \caption{Спецификация формата .rem\label{tab:scene_spec}}\\ \hline
-    \centrow Поле & \centrow Тип & \centrow Описание \\ \hline
-    \endfirsthead
-    \continuecaption{Продолжение таблицы \ref{tab:scene_spec}}
-    \centrow Поле & \centrow Тип & \centrow Описание \\ \hline 
-    \finishhead
-
-    \multicolumn{3}{|l|}{Первая строка -- обязательно должна быть равна \texttt{[RENGINE MAP FORMAT V1.0]}} \\ \hline
-    \multicolumn{3}{|c|}{Объекты сцены} \\ \hline
-    mesh & string & Тип объекта (cube/sphere) \\ \hline
-    pos\_x, pos\_y, pos\_z & float & Положение объекта в пространстве \\ \hline
-    rot\_x, rot\_y, rot\_z & float & Углы поворота объекта (в градусах) \\ \hline
-    scale\_x, scale\_y, scale\_z & float & Масштабирование по осям \\ \hline
-    distort & bool & Флаг искажения объекта \\ \hline
-    texture & string & Путь к файлу текстуры \\ \hline
-
-    \multicolumn{3}{|c|}{Параметры камеры} \\ \hline
-    camera\_x, camera\_y, camera\_z & float & Позиция камеры \\ \hline
-    rotate\_x, rotate\_y, rotate\_z & float & Углы поворота камеры (в градусах) \\ \hline
-    fov & float & Угол обзора (в градусах) \\ \hline
-
-    \multicolumn{3}{|l|}{Комментарии -- должны начинаться с \texttt{//} и занимать целую строку}
-\end{xltabular}
-
-Пример содержимого файла:
-\begin{lstlisting}[language=,caption=Пример файла .rem]
-[RENGINE MAP FORMAT V1.0]
-// Комментарий
-camera,0,0,2,0,180,0,60
-cube,0,-1,0,0,0,0,15,1,15,false,grass.bmp
-sphere,0,-1,0,0,0,0,15,1,15,false,metal.bmp
-\end{lstlisting}
 
 \subsection{Тестирование}
 
