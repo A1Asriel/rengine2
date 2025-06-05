@@ -25,9 +25,6 @@ public:
     /// @param height Высота окна
     Renderer(int width, int height);
 
-    /// @brief Камера для просмотра сцены
-    Camera camera;
-
     /// @brief Получение сцены
     /// @return Указатель на сцену
     Scene* getScene() { return scene; }
@@ -40,6 +37,14 @@ public:
     /// @param vertexPath Путь к вершинному шейдеру
     /// @param fragmentPath Путь к фрагментному шейдеру
     void setShader(const char* vertexPath, const char* fragmentPath);
+
+    /// @brief Получение ширины окна
+    /// @return Ширина окна
+    int getWidth() { return width; }
+
+    /// @brief Получение высоты окна
+    /// @return Высота окна
+    int getHeight() { return height; }
 
     /// @brief Отрисовка сцены
     /// @param ticks Текущее время в миллисекундах

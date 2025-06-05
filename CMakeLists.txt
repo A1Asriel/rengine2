@@ -33,7 +33,7 @@ set(SOURCES
     src/InputHandler.cpp
     src/Camera.cpp
     src/Texture.cpp
-    src/Window.cpp
+    src/Engine.cpp
 )
 
 # Create library

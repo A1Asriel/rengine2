@@ -15,13 +15,10 @@ void applyTexture(REngine::SceneNode& node, glm::vec3 defColor = glm::vec3(1.0f)
 void applySpecTexture(REngine::SceneNode& node, glm::vec3 defColor = glm::vec3(0.5f));
 
 REngine::Renderer::Renderer(int width, int height)
-    : width(width), height(height), camera(width, height) {}
+    : width(width), height(height) {}
 
 void REngine::Renderer::setScene(Scene* scene) {
     this->scene = scene;
-    camera.position = scene->camera.position;
-    camera.setRotation(scene->camera.rotation.x, scene->camera.rotation.y, scene->camera.rotation.z);
-    camera.fov = scene->camera.fov;
 }
 
 void REngine::Renderer::setShader(const char* vertexPath, const char* fragmentPath) {
@@ -50,10 +47,10 @@ void REngine::Renderer::draw(unsigned long ticks) {
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
     shader->use();
-    shader->setMat4("view", camera.getViewMatrix());
-    shader->setMat4("projection", camera.getProjectionMatrix());
+    shader->setMat4("view", scene->camera.getViewMatrix());
+    shader->setMat4("projection", scene->camera.getProjectionMatrix());
     shader->setFloat("u_time", ticks / 1000.0f);
-    shader->setVec3("u_camera_position", camera.position);
+    shader->setVec3("u_camera_position", scene->camera.position);
     shader->setVec3("dirLight.direction", scene->dirLight.direction);
     shader->setVec3("dirLight.ambient", scene->dirLight.ambient);
     shader->setVec3("dirLight.diffuse", scene->dirLight.diffuse);

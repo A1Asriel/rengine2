@@ -1,13 +1,14 @@
-#include "Window.h"
+#include "Engine.h"
 
 #include <SDL.h>
 
 #include "InputHandler.h"
+#include "Renderer.h"
 #include "Logging.h"
 
 SDL_Window* window = nullptr;
 SDL_GLContext glContext = nullptr;
-REngine::Renderer* REngine::renderer = nullptr;
+REngine::Renderer* renderer = nullptr;
 
 void moveCamera(SDL_Keycode key, float deltaTime) {
     glm::vec3 viewPos = glm::vec3(0);
@@ -30,7 +31,7 @@ void moveCamera(SDL_Keycode key, float deltaTime) {
     if (key == SDLK_LCTRL)
         viewPos.y -= moveSpeed * deltaTime;
 
-    REngine::renderer->camera.moveRelative(viewPos.x, viewPos.y, viewPos.z);
+    renderer->getScene()->camera.moveRelative(viewPos.x, viewPos.y, viewPos.z);
 }
 
 int REngine::createWindow(const char* title, int width, int height) {
@@ -121,7 +122,7 @@ void REngine::mainLoop() {
         if (SDL_GetMouseState(NULL, NULL) & SDL_BUTTON_RMASK) {
             float dx = xrel / 5.0f;
             float dy = yrel / 5.0f;
-            renderer->camera.rotateRelative(dx, dy, 0);
+            renderer->getScene()->camera.rotateRelative(dx, dy, 0);
         }
     });
 
@@ -131,7 +132,7 @@ void REngine::mainLoop() {
             InputHandler::setMouseMotionCallback([&](int x, int y, int xrel, int yrel) {
                 float dx = xrel / 5.0f;
                 float dy = yrel / 5.0f;
-                renderer->camera.rotateRelative(dx, dy, 0);
+                renderer->getScene()->camera.rotateRelative(dx, dy, 0);
             });
         } else {
             ERROR("Failed to set relative mouse mode: " << SDL_GetError());
@@ -145,7 +146,7 @@ void REngine::mainLoop() {
             if (SDL_GetMouseState(NULL, NULL) & SDL_BUTTON_RMASK) {
                 float dx = xrel / 5.0f;
                 float dy = yrel / 5.0f;
-                renderer->camera.rotateRelative(dx, dy, 0);
+                renderer->getScene()->camera.rotateRelative(dx, dy, 0);
             }
         });
     });
@@ -169,6 +170,20 @@ void REngine::mainLoop() {
         renderer->draw(currentTime);
         SDL_GL_SwapWindow(window);
     }
+}
+
+void REngine::setScene(REngine::Scene* scene) {
+    scene->camera.w = renderer->getWidth();
+    scene->camera.h = renderer->getHeight();
+    renderer->setScene(scene);
+}
+
+REngine::Scene* REngine::getScene() {
+    return renderer->getScene();
+}
+
+void REngine::setShader(const char* vertexPath, const char* fragmentPath) {
+    renderer->setShader(vertexPath, fragmentPath);
 }
 
 void REngine::destroyWindow() {

@@ -25,6 +25,9 @@ public:
     int h;
 
     /// @brief Конструктор камеры
+    Camera();
+
+    /// @brief Конструктор камеры
     /// @param width Ширина окна
     /// @param height Высота окна
     Camera(int width, int height);
@@ -36,8 +39,8 @@ public:
     void setRotation(float rx, float ry, float rz);
 
     /// @brief Получение углов поворота камеры
-    /// @return std::tuple<float, float, float> Углы поворота по X, Y и Z в градусах
-    std::tuple<float, float, float> getRotation() const;
+    /// @return glm::vec3 Углы поворота по X, Y и Z в градусах
+    glm::vec3 getRotation() const;
 
     /// @brief Получение матрицы просмотра
     /// @return glm::mat4 Матрица просмотра

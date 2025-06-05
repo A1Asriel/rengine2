@@ -1,7 +1,7 @@
-#ifndef WINDOW_H
-#define WINDOW_H
+#ifndef ENGINE_H
+#define ENGINE_H
 
-#include "Renderer.h"
+#include "Scene.h"
 
 namespace REngine {
     enum WindowError {
@@ -11,16 +11,29 @@ namespace REngine {
         RENDERER_INIT_FAILED = -4
     };
 
-    extern Renderer* renderer;
-
     /// @brief Создание окна
     /// @param title Название окна
     /// @param width Ширина окна
     /// @param height Высота окна
     /// @return 0 при успехе, код ошибки при неудаче
     int createWindow(const char* title, int width = 0, int height = 0);
+
     /// @brief Основной цикл
     void mainLoop();
+
+    /// @brief Установка сцены
+    /// @param scene Указатель на сцену
+    void setScene(REngine::Scene* scene);
+
+    /// @brief Получение указателя на сцену
+    /// @return Указатель на сцену
+    REngine::Scene* getScene();
+
+    /// @brief Установка шейдера
+    /// @param vertexPath Путь к вершинному шейдеру
+    /// @param fragmentPath Путь к фрагментному шейдеру
+    void setShader(const char* vertexPath, const char* fragmentPath);
+
     /// @brief Уничтожение окна
     void destroyWindow();
 }

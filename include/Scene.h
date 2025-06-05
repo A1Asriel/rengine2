@@ -5,6 +5,7 @@
 #include <string>
 #include <vector>
 #include "Mesh.h"
+#include "Camera.h"
 
 #define POINT_LIGHTS_MAX 128
 
@@ -37,16 +38,6 @@ struct SceneNode {
     std::string texturePath = "";
     /// @brief Путь к текстуре отражений
     std::string specularPath = "";
-};
-
-/// @brief Структура для хранения информации о камере
-struct CameraNode {
-    /// @brief Позиция камеры
-    glm::vec3 position = glm::vec3(0.0f);
-    /// @brief Поворот камеры
-    glm::vec3 rotation = glm::vec3(0.0f);
-    /// @brief Угол обзора камеры
-    float fov = 45.0f;
 };
 
 /// @brief Структура для хранения информации о направленном источнике света
@@ -82,11 +73,10 @@ struct PointLight {
 /// @brief Структура для управления сценой
 /// @details Хранит и управляет коллекцией сценных объектов
 struct Scene {
-public:
     /// @brief Список объектов сцены
     std::vector<SceneNode> nodes = {};
     /// @brief Камера
-    CameraNode camera;
+    Camera camera;
     /// @brief Цвет неба
     glm::vec3 skyColor = glm::vec3(0.63f, 0.63f, 0.85f);
     /// @brief Направленный источник света
