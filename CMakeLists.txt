@@ -27,8 +27,7 @@ find_package(SDL2 REQUIRED)
 set(SOURCES
     src/glad.c
     src/Shader.cpp
-    src/CubeMesh.cpp
-    src/SphereMesh.cpp
+    src/Mesh.cpp
     src/Renderer.cpp
     src/InputHandler.cpp
     src/Camera.cpp

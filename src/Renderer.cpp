@@ -6,8 +6,7 @@
 #include <vector>
 #include <SDL.h>
 
-#include "CubeMesh.h"
-#include "SphereMesh.h"
+#include "Mesh.h"
 #include "Logging.h"
 #include "Texture.h"
 
