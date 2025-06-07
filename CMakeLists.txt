@@ -33,6 +33,7 @@ set(SOURCES
     src/Camera.cpp
     src/Texture.cpp
     src/Engine.cpp
+    src/Volume.cpp
 )
 
 # Create library

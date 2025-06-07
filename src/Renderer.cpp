@@ -9,6 +9,7 @@
 #include "Mesh.h"
 #include "Logging.h"
 #include "Texture.h"
+#include "Volume.h"
 
 void applyTexture(REngine::SceneNode& node, glm::vec3 defColor = glm::vec3(1.0f));
 void applySpecTexture(REngine::SceneNode& node, glm::vec3 defColor = glm::vec3(0.5f));
@@ -65,12 +66,39 @@ void REngine::Renderer::draw(unsigned long ticks) {
         shader->setFloat("pointLights[" + std::to_string(i) + "].quadratic", scene->pointLights[i].quadratic);
     }
 
+    REngine::Frustum frustum(scene->camera, (float)width / (float)height);
     for (SceneNode& node : scene->nodes) {
         glm::mat4 model = glm::mat4(1.0f);
         model = glm::translate(model, node.position);
         model = glm::rotate(model, glm::radians(node.rotation.x), glm::vec3(1.0f, 0.0f, 0.0f));
         model = glm::rotate(model, glm::radians(node.rotation.y), glm::vec3(0.0f, 1.0f, 0.0f));
         model = glm::rotate(model, glm::radians(node.rotation.z), glm::vec3(0.0f, 0.0f, 1.0f));
+
+        const glm::vec3 min = node.mesh->getMin() * node.scale;
+        const glm::vec3 max = node.mesh->getMax() * node.scale;
+
+        const std::vector<glm::vec3> corners = {
+            glm::vec3(model * glm::vec4(min.x, min.y, min.z, 1.0f)),
+            glm::vec3(model * glm::vec4(min.x, min.y, max.z, 1.0f)),
+            glm::vec3(model * glm::vec4(min.x, max.y, min.z, 1.0f)),
+            glm::vec3(model * glm::vec4(min.x, max.y, max.z, 1.0f)),
+            glm::vec3(model * glm::vec4(max.x, min.y, min.z, 1.0f)),
+            glm::vec3(model * glm::vec4(max.x, min.y, max.z, 1.0f)),
+            glm::vec3(model * glm::vec4(max.x, max.y, min.z, 1.0f)),
+            glm::vec3(model * glm::vec4(max.x, max.y, max.z, 1.0f))
+        };
+
+        glm::vec3 worldMin = corners[0];
+        glm::vec3 worldMax = corners[0];
+        for (const glm::vec3& corner : corners) {
+            worldMin = glm::min(worldMin, corner);
+            worldMax = glm::max(worldMax, corner);
+        }
+        
+        if (!frustum.isBoxInFrustum(worldMin, worldMax)) {
+            continue;
+        }
+
         model = glm::scale(model, node.scale);
         shader->setMat4("model", model);
         shader->setMat4("normalMatrix", glm::transpose(glm::inverse(model)));

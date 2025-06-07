@@ -1,7 +1,7 @@
 #include "Mesh.h"
 #include <glad/glad.h>
 
-REngine::Mesh::Mesh(std::vector<float> vertices, std::vector<unsigned> indices) {
+REngine::Mesh::Mesh(std::vector<float> vertices, std::vector<unsigned> indices) : vertices(vertices) {
     glGenVertexArrays(1, &VAO);
     glGenBuffers(1, &VBO);
     glGenBuffers(1, &EBO);
@@ -64,6 +64,15 @@ void REngine::Mesh::draw(const Shader& shader) {
         Texture::unbind();
     }
     glBindVertexArray(0);
+}
+
+void REngine::Mesh::computeAABB() {
+    min = glm::vec3(vertices[0], vertices[1], vertices[2]);
+    max = glm::vec3(vertices[0], vertices[1], vertices[2]);
+    for (int i = 0; i < vertices.size(); i += 8) {
+        min = glm::min(min, glm::vec3(vertices[i], vertices[i + 1], vertices[i + 2]));
+        max = glm::max(max, glm::vec3(vertices[i], vertices[i + 1], vertices[i + 2]));
+    }
 }
 
 REngine::Mesh REngine::Mesh::createCube() {

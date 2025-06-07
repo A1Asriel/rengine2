@@ -26,9 +26,27 @@ public:
     /// @param shader Используемый шейдер
     void draw(const Shader& shader);
 
+    /// @brief Вычисление AABB
+    void computeAABB();
+
+    /// @brief Получение минимальных координат AABB
+    /// @return Минимальные координаты AABB
+    const glm::vec3& getMin() const { return min; }
+    /// @brief Получение максимальных координат AABB
+    /// @return Максимальные координаты AABB
+    const glm::vec3& getMax() const { return max; }
+
+    /// @brief Создание куба
+    /// @return Куб
     static Mesh createCube();
+    /// @brief Создание сферы
+    /// @param vslices Количество вертикальных сегментов
+    /// @param hslices Количество горизонтальных сегментов
+    /// @return Сфера
     static Mesh createSphere(int vslices = 100, int hslices = 100);
 private:
+    /// @brief Вектор вершин
+    std::vector<float> vertices;
     /// @brief Vertex Array Object
     unsigned int VAO;
     /// @brief Vertex Buffer Object
@@ -37,6 +55,10 @@ private:
     unsigned int EBO;
     /// @brief Количество индексов
     unsigned int indexSize;
+    /// @brief Минимальные координаты AABB
+    glm::vec3 min;
+    /// @brief Максимальные координаты AABB
+    glm::vec3 max;
 };
 }
 
