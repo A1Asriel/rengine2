@@ -19,12 +19,6 @@ private:
     Scene* scene;
     /// @brief Указатель на шейдер для рендеринга
     Shader* shader;
-
-    /// @brief Проверка, находится ли объект в кадре
-    /// @param position Позиция объекта
-    /// @param size Размер объекта
-    /// @return true, если объект находится в кадре, иначе false
-    bool isInFrustum(glm::vec3 position, glm::vec3 size);
 public:
     /// @brief Конструктор движка
     /// @param width Ширина окна

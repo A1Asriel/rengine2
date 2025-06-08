@@ -34,6 +34,10 @@ namespace REngine {
     /// @param fragmentPath Путь к фрагментному шейдеру
     void setShader(const char* vertexPath, const char* fragmentPath);
 
+    /// @brief Получение указателя на шейдер
+    /// @return Указатель на шейдер
+    REngine::Shader* getShader();
+
     /// @brief Уничтожение окна
     void destroyWindow();
 }

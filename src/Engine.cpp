@@ -186,6 +186,10 @@ void REngine::setShader(const char* vertexPath, const char* fragmentPath) {
     renderer->setShader(vertexPath, fragmentPath);
 }
 
+REngine::Shader* REngine::getShader() {
+    return renderer->getShader();
+}
+
 void REngine::destroyWindow() {
     SDL_GL_DeleteContext(glContext);
     SDL_DestroyWindow(window);
