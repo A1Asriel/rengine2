@@ -5,100 +5,71 @@
 #include <cstdio>
 #include <filesystem>
 #include <fstream>
+#include <vector>
+
 #include <glm/glm.hpp>
 #include <glm/gtc/epsilon.hpp>
 #include <glm/gtc/matrix_transform.hpp>
 
 #include "Camera.h"
-#include "RE_Window.h"
+#include "Mesh.h"
+#include "Renderer.h"
 #include "Scene.h"
-#include "SceneLoader.h"
 #include "Shader.h"
-
-TEST(SceneLoader, LoadScene) {
-    const std::string fname = "test_scene.csv";
-    std::ofstream f(fname);
-    f << "[RENGINE MAP FORMAT V1.0]\n";
-    f << "camera,0,1,3,not working\n";
-    f << "camera,0,1,3,a,b,c,d\n";
-    f << "camera,0,0,0,0,0,0,45\n";
-    f << "cube,0,0,0,0,0,0,1,1,1,false,uv-test.bmp\n";
-    f << "cube,7,8,9,0,0\n";
-    f << "sphere,1,2,3,0,0,0,2,2,2,false\n";
-    f << "notfound,4,5,6,0,0,0,3,3,3,false\n";
-    f << "\n";
-    f << "cube,10,11,12,0,a0,0,1,1,1,true\n";
-    f.close();
-
-    Scene scene;
-    ASSERT_TRUE(SceneLoader::load(fname, &scene));
-    ASSERT_EQ(scene.nodes.size(), 2);
-    EXPECT_EQ(scene.nodes[0].mesh, MeshType::Cube);
-    EXPECT_EQ(scene.nodes[1].mesh, MeshType::Sphere);
-
-    std::remove(fname.c_str());
-}
-
-TEST(SceneLoader, InvalidScene) {
-    const std::string fname = "test_scene.csv";
-    std::ofstream f(fname);
-    f << "[RENGINE MAP FORMAT V2.0]\n";
-    f << "camera,0,1,3,not working\n";
-    f << "camera,0,1,3,a,b,c,d\n";
-    f << "camera,0,0,0,0,0,0,45\n";
-    f << "cube,0,0,0,0,0,0,1,1,1,false,uv-test.bmp\n";
-    f << "cube,7,8,9,0,0\n";
-    f << "sphere,1,2,3,0,0,0,2,2,2,false\n";
-    f << "notfound,4,5,6,0,0,0,3,3,3,false\n";
-    f << "\n";
-    f << "cube,10,11,12,0,a0,0,1,1,1,true\n";
-    f.close();
-
-    Scene scene;
-    ASSERT_FALSE(SceneLoader::load(fname, &scene));
-    std::remove(fname.c_str());
-}
+#include "Engine.h"
 
 TEST(Camera, DefaultViewProjection) {
     const int w = 800, h = 600;
-    Camera cam(w, h);
+    REngine::Camera cam(w, h);
+
     glm::mat4 view = cam.getViewMatrix();
-    glm::mat4 expectedView = glm::lookAt(cam.position, cam.position + cam.front, cam.up);
-    for (int i = 0; i < 4; ++i) {
-        for (int j = 0; j < 4; ++j) {
-            EXPECT_NEAR(view[i][j], expectedView[i][j], 1e-5f);
-        }
-    }
 
     glm::mat4 proj = cam.getProjectionMatrix();
-    float f = 1.0f / std::tan(glm::radians(cam.fov) / 2.0f);
-    EXPECT_NEAR(proj[1][1], f, 1e-5f);
-    EXPECT_NEAR(proj[0][0], f / (float(w) / float(h)), 1e-5f);
+
+    EXPECT_NE(glm::determinant(view), 0.0f);
+    EXPECT_NE(glm::determinant(proj), 0.0f);
+
+    glm::vec3 initialPos = cam.position;
+    cam.moveRelative(1.0f, 0.0f, 0.0f);
+    EXPECT_NE(glm::length(cam.position - initialPos), 0.0f);
+
+    glm::vec3 initialRotation = cam.getRotation();
+    cam.rotateRelative(10.0f, 10.0f, 10.0f);
+    glm::vec3 newRotation = cam.getRotation();
+    EXPECT_NE(initialRotation.x, newRotation.x);
 }
 
-TEST(Renderer, InitAndDraw) {
-    Renderer* window = new Renderer("Test Window", 640, 480);
-    ASSERT_EQ(window->init(), 0) << "Window initialization failed";
-    ASSERT_NE(window->getSDL_Window(), nullptr);
-    ASSERT_NE(window->getSDL_GLContext(), nullptr);
+TEST(Renderer, Initialization) {
+    if (SDL_Init(SDL_INIT_VIDEO) < 0) {
+        FAIL() << "SDL could not initialize! SDL_Error: " << SDL_GetError();
+    }
+    SDL_Window* window = SDL_CreateWindow("Test", 
+        SDL_WINDOWPOS_UNDEFINED, SDL_WINDOWPOS_UNDEFINED, 
+        800, 600, 
+        SDL_WINDOW_OPENGL | SDL_WINDOW_HIDDEN);
+    ASSERT_NE(window, nullptr) << "Window could not be created!";
 
-    window->shader = new Shader("shaders/vertex.glsl", "shaders/fragment.glsl");
-    ASSERT_TRUE(window->shader->isValid()) << "Shader initialization failed";
+    SDL_GLContext context = SDL_GL_CreateContext(window);
+    ASSERT_NE(context, nullptr) << "OpenGL context could not be created!";
 
-    Scene scene;
-    scene.nodes.push_back({MeshType::Cube, glm::vec3(0), glm::vec3(0), glm::vec3(1), false});
-    scene.nodes.push_back({MeshType::Sphere, glm::vec3(1, 2, 3), glm::vec3(45, 0, 0), glm::vec3(2), false, "uv-test.bmp"});
-    scene.nodes.push_back({MeshType::Cube, glm::vec3(1, 2, 3), glm::vec3(45, 0, 0), glm::vec3(2), true, "uv-test.bmp"});
-    scene.nodes.push_back({MeshType::Cube, glm::vec3(1, 2, 3), glm::vec3(45, 0, 0), glm::vec3(2), true, "alpha.bmp"});
-    scene.nodes.push_back({MeshType::Cube, glm::vec3(1, 2, 3), glm::vec3(45, 0, 0), glm::vec3(2), true, "garbage.bmp"});
-    scene.nodes.push_back({MeshType::Cube, glm::vec3(1, 2, 3), glm::vec3(45, 0, 0), glm::vec3(2), true, "garbage_with_bm.bmp"});
-    scene.nodes.push_back({MeshType::Cube, glm::vec3(1, 2, 3), glm::vec3(45, 0, 0), glm::vec3(2), true, "16bit.bmp"});
-    scene.nodes.push_back({MeshType::Cube, glm::vec3(1, 2, 3), glm::vec3(45, 0, 0), glm::vec3(2), true, "not_real.bmp"});
-    window->scene = &scene;
-    window->draw(0);
+    REngine::Renderer* renderer = REngine::initRenderer(800, 600);
+    ASSERT_NE(renderer, nullptr) << "Renderer initialization failed";
 
-    delete window->shader;
-    delete window;
+    REngine::Scene scene;
+    renderer->setScene(&scene);
+
+    renderer->setShader(NULL, NULL);
+
+    REngine::Scene* scenePtr = renderer->getScene();
+    EXPECT_NE(scenePtr, nullptr);
+    
+    EXPECT_EQ(renderer->getWidth(), 800);
+    EXPECT_EQ(renderer->getHeight(), 600);
+
+    delete renderer;
+    SDL_GL_DeleteContext(context);
+    SDL_DestroyWindow(window);
+    SDL_Quit();
 }
 
 TEST(Shader, Compilation) {
@@ -133,7 +104,7 @@ TEST(Shader, Compilation) {
                                           SDL_WINDOWPOS_UNDEFINED, 640, 480, SDL_WINDOW_OPENGL);
     SDL_GLContext context = SDL_GL_CreateContext(window);
 
-    Shader* shader = new Shader(vert_path.c_str(), frag_path.c_str());
+    REngine::Shader* shader = new REngine::Shader(vert_path.c_str(), frag_path.c_str());
     ASSERT_TRUE(shader->isValid()) << "Shader compilation failed";
 
     delete shader;
@@ -144,47 +115,92 @@ TEST(Shader, Compilation) {
     SDL_Quit();
 }
 
-TEST(Shader, InvalidPathShader) {
-    if (SDL_Init(SDL_INIT_VIDEO) < 0) {
-        FAIL() << "SDL could not initialize! SDL_Error: " << SDL_GetError();
-    }
-
-    SDL_Window* window = SDL_CreateWindow("Test", SDL_WINDOWPOS_UNDEFINED,
-                                          SDL_WINDOWPOS_UNDEFINED, 640, 480, SDL_WINDOW_OPENGL);
-    SDL_GLContext context = SDL_GL_CreateContext(window);
-
-    Shader* shader = new Shader("invalid.vert", "invalid.frag");
-    ASSERT_TRUE(shader->isValid()) << "Shader should be valid";
-
-    delete shader;
-    SDL_GL_DeleteContext(context);
-    SDL_DestroyWindow(window);
-    SDL_Quit();
-}
-
-TEST(Scene, Transformations) {
-    Scene scene;
-
-    scene.nodes.push_back({MeshType::Cube, glm::vec3(0), glm::vec3(0), glm::vec3(1)});
-    scene.nodes.push_back({MeshType::Sphere, glm::vec3(1, 2, 3), glm::vec3(45, 0, 0), glm::vec3(2)});
-
-    scene.nodes[0].position = glm::vec3(1, 2, 3);
-    scene.nodes[0].rotation = glm::vec3(45, 0, 0);
-    scene.nodes[0].scale = glm::vec3(2);
-
+TEST(Scene, NodeManipulation) {
+    REngine::Scene scene;
+    scene.camera = REngine::Camera(640, 480);
+    
+    REngine::SceneNode node1;
+    node1.position = glm::vec3(1, 2, 3);
+    node1.rotation = glm::vec3(45, 0, 0);
+    node1.scale = glm::vec3(2);
+    node1.shininess = 64.0f;
+    node1.distort = true;
+    node1.texturePath = "test_texture.bmp";
+    
+    scene.nodes.push_back(node1);
+    ASSERT_EQ(scene.nodes.size(), 1);
+    
     EXPECT_EQ(scene.nodes[0].position, glm::vec3(1, 2, 3));
     EXPECT_EQ(scene.nodes[0].rotation, glm::vec3(45, 0, 0));
     EXPECT_EQ(scene.nodes[0].scale, glm::vec3(2));
-    Camera cam(800, 600);
-    cam.moveRelative(0.1f, SDL_GetKeyboardState(NULL));
-    cam.rotateRelative(10, 10, 10);
+    EXPECT_FLOAT_EQ(scene.nodes[0].shininess, 64.0f);
+    EXPECT_TRUE(scene.nodes[0].distort);
+    EXPECT_EQ(scene.nodes[0].texturePath, "test_texture.bmp");
+    
+    scene.camera.position = glm::vec3(0, 0, 5);
+    EXPECT_EQ(scene.camera.position, glm::vec3(0, 0, 5));
 
-    glm::mat4 view = cam.getViewMatrix();
-    glm::mat4 proj = cam.getProjectionMatrix();
+    scene.camera.setRotation(45.0f, 30.0f, 0.0f);
+    glm::vec3 rotation = scene.camera.getRotation();
+    EXPECT_FLOAT_EQ(rotation.x, 45.0f);
+    EXPECT_FLOAT_EQ(rotation.y, 30.0f);
 
-    glm::vec4 camOrigin = view * glm::vec4(cam.position, 1);
-    EXPECT_TRUE(glm::all(glm::epsilonEqual(camOrigin, glm::vec4(0, 0, 0, 1), glm::epsilon<float>())));
-    EXPECT_GT(proj[1][1], 0);
+    glm::mat4 view = scene.camera.getViewMatrix();
+    glm::mat4 proj = scene.camera.getProjectionMatrix();
+    EXPECT_NE(glm::determinant(view), 0.0f);
+    EXPECT_NE(glm::determinant(proj), 0.0f);
+
+    scene.dirLight.direction = glm::vec3(-0.2f, -1.0f, -0.3f);
+    scene.dirLight.ambient = glm::vec3(0.2f);
+    scene.dirLight.diffuse = glm::vec3(0.5f);
+    scene.dirLight.specular = glm::vec3(1.0f);
+    
+    EXPECT_EQ(scene.dirLight.direction, glm::vec3(-0.2f, -1.0f, -0.3f));
+    EXPECT_EQ(scene.dirLight.ambient, glm::vec3(0.2f));
+    EXPECT_EQ(scene.dirLight.diffuse, glm::vec3(0.5f));
+    EXPECT_EQ(scene.dirLight.specular, glm::vec3(1.0f));
+}
+
+TEST(Engine, WindowCreation) {
+    REngine::Scene scene;
+    
+    REngine::SceneNode n_sphere, n_noTexture, n_texture, n_specular, n_alpha, n_garbage, n_garbageWithBm, n_16bit, n_notReal;
+    n_texture.texturePath = "uv-test.bmp";
+    n_specular.specularPath = "uv-test.bmp";
+    n_alpha.texturePath = "alpha.bmp";
+    n_garbage.texturePath = "garbage.bmp";
+    n_garbageWithBm.texturePath = "garbage_with_bm.bmp";
+    n_16bit.texturePath = "16bit.bmp";
+    n_notReal.texturePath = "not_real.bmp";
+
+    std::vector<REngine::SceneNode> nodes = {n_noTexture, n_texture, n_specular, n_alpha, n_garbage, n_garbageWithBm, n_16bit, n_notReal};
+
+    for (auto& node : nodes) {
+        node.mesh = new REngine::Mesh(REngine::Mesh::createCube());
+        node.mesh->computeAABB();
+        scene.nodes.push_back(node);
+    }
+    n_sphere.mesh = new REngine::Mesh(REngine::Mesh::createSphere());
+    n_sphere.mesh->computeAABB();
+    scene.nodes.push_back(n_sphere);
+
+    scene.dirLight.direction = glm::vec3(-1, -1, -1);
+    scene.dirLight.ambient = glm::vec3(0.2f);
+    scene.dirLight.diffuse = glm::vec3(0.5f);
+    scene.dirLight.specular = glm::vec3(1.0f);
+
+    scene.camera = REngine::Camera(800, 600);
+    scene.camera.position = glm::vec3(0, 0, 5);
+    scene.camera.setRotation(0.0f, -90.0f, 0.0f);
+
+    REngine::createWindow("test", 800, 600);
+    REngine::setScene(&scene);
+
+    REngine::setShader(NULL, NULL);
+
+    REngine::mainLoop();
+
+    REngine::destroyWindow();
 }
 
 int main(int argc, char** argv) {

@@ -101,69 +101,67 @@ install(FILES
     DESTINATION ${CMAKE_INSTALL_DATAROOTDIR}/cmake/rengine
 )
 
-# enable_testing()
+enable_testing()
 
-# add_executable(rengine_tests tests/test_main.cpp ${SOURCES})
-# if(WIN32 OR MINGW)
-#     set_target_properties(rengine_tests PROPERTIES LINK_FLAGS "-mconsole")
-# endif()
-# target_link_libraries(rengine_tests
-#     gtest
-#     # SDL2::SDL2main
-#     # SDL2::SDL2-static
-#     glm::glm
-#     ${EXTRA_LIBS}
-#     "-static-libgcc" "-static-libstdc++"
-# )
-# add_test(NAME rengine_tests COMMAND rengine_tests)
+include(FetchContent)
+FetchContent_Declare(
+    googletest
+    GIT_REPOSITORY    https://github.com/google/googletest.git
+    GIT_TAG    52eb8108c5bdec04579160ae17225d66034bd723
+)
+FetchContent_MakeAvailable(googletest)
 
-# option(COVERAGE "Enable coverage" OFF)
-# if(COVERAGE)
-#     find_program(GCOVR gcovr)
-#     if(GCOVR)
-#         set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} --coverage -g -O0")
-# enable_testing()
+add_executable(rengine_tests
+    ${SOURCES}
+    tests/test_main.cpp
+)
 
-# add_executable(rengine_tests tests/test_main.cpp ${SOURCES})
-# if(WIN32 OR MINGW)
-#     set_target_properties(rengine_tests PROPERTIES LINK_FLAGS "-mconsole")
-# endif()
-# target_link_libraries(rengine_tests
-#     gtest
-#     # SDL2::SDL2main
-#     # SDL2::SDL2-static
-#     glm::glm
-#     ${EXTRA_LIBS}
-#     "-static-libgcc" "-static-libstdc++"
-# )
-# add_test(NAME rengine_tests COMMAND rengine_tests)
+if(WIN32 OR MINGW)
+    set_target_properties(rengine_tests PROPERTIES LINK_FLAGS "-mconsole")
+endif()
 
-# option(COVERAGE "Enable coverage" OFF)
-# if(COVERAGE)
-#     find_program(GCOVR gcovr)
-#     if(GCOVR)
-#         set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} --coverage -g -O0")
-#         set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} --coverage -g -O0")
-#         add_custom_target(clean_coverage
-#             COMMAND ${CMAKE_COMMAND} -E remove_directory "${CMAKE_BINARY_DIR}/coverage/"
-#             COMMAND ${CMAKE_COMMAND} -E remove_directory "${CMAKE_BINARY_DIR}/CMakeFiles/rengine.dir/src/"
-#             COMMAND ${CMAKE_COMMAND} -E remove_directory "${CMAKE_BINARY_DIR}/CMakeFiles/rengine_tests.dir/src/"
-#             COMMAND ${CMAKE_COMMAND} -E make_directory "${CMAKE_BINARY_DIR}/CMakeFiles/rengine.dir/src/"
-#             COMMAND ${CMAKE_COMMAND} -E make_directory "${CMAKE_BINARY_DIR}/CMakeFiles/rengine_tests.dir/src/"
-#         )
+target_link_libraries(rengine_tests
+    PRIVATE
+    rengine
+    GTest::gtest_main
+    GTest::gmock
+    -static
+)
 
-#         add_custom_target(coverage
-#             # DEPENDS clean_coverage
-#             # DEPENDS rengine
-#             DEPENDS rengine_tests
-#             # COMMAND ${CMAKE_BINARY_DIR}/rengine${CMAKE_EXECUTABLE_SUFFIX}
-#             COMMAND ${CMAKE_COMMAND} -E chdir ${CMAKE_BINARY_DIR} ${CMAKE_CTEST_COMMAND} --output-on-failure
-#             COMMAND ${CMAKE_COMMAND} -E make_directory "${CMAKE_BINARY_DIR}/coverage"
-#             COMMAND ${GCOVR} -r ${CMAKE_SOURCE_DIR} --html --html-details --exclude "${CMAKE_SOURCE_DIR}/build" --exclude "${CMAKE_SOURCE_DIR}/src/glad.c" -o ${CMAKE_BINARY_DIR}/coverage/index.html
-#             WORKING_DIRECTORY ${CMAKE_BINARY_DIR}
-#         )
-#     endif()
-# endif()
+target_include_directories(rengine_tests
+    PRIVATE
+    ${CMAKE_CURRENT_SOURCE_DIR}/include
+    ${SDL2_INCLUDE_DIRS}
+)
+
+add_test(NAME rengine_tests COMMAND rengine_tests)
+
+option(COVERAGE "Enable coverage" OFF)
+if(COVERAGE)
+    find_program(GCOVR gcovr)
+    if(GCOVR)
+        set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} --coverage -g -O0")
+        set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} --coverage -g -O0")
+        add_custom_target(clean_coverage
+            COMMAND ${CMAKE_COMMAND} -E remove_directory "${CMAKE_BINARY_DIR}/coverage/"
+            COMMAND ${CMAKE_COMMAND} -E remove_directory "${CMAKE_BINARY_DIR}/CMakeFiles/rengine.dir/src/"
+            COMMAND ${CMAKE_COMMAND} -E remove_directory "${CMAKE_BINARY_DIR}/CMakeFiles/rengine_tests.dir/src/"
+            COMMAND ${CMAKE_COMMAND} -E make_directory "${CMAKE_BINARY_DIR}/CMakeFiles/rengine.dir/src/"
+            COMMAND ${CMAKE_COMMAND} -E make_directory "${CMAKE_BINARY_DIR}/CMakeFiles/rengine_tests.dir/src/"
+        )
+
+        add_custom_target(coverage
+            # DEPENDS clean_coverage
+            # DEPENDS rengine
+            DEPENDS rengine_tests
+            # COMMAND ${CMAKE_BINARY_DIR}/rengine${CMAKE_EXECUTABLE_SUFFIX}
+            COMMAND ${CMAKE_COMMAND} -E chdir ${CMAKE_BINARY_DIR} ${CMAKE_CTEST_COMMAND} --output-on-failure
+            COMMAND ${CMAKE_COMMAND} -E make_directory "${CMAKE_BINARY_DIR}/coverage"
+            COMMAND ${GCOVR} -r ${CMAKE_SOURCE_DIR} --html --html-details --exclude "${CMAKE_SOURCE_DIR}/build" --exclude "${CMAKE_SOURCE_DIR}/src/glad.c" -o ${CMAKE_BINARY_DIR}/coverage/index.html
+            WORKING_DIRECTORY ${CMAKE_BINARY_DIR}
+        )
+    endif()
+endif()
 
 # option(PROFILING "Enable profiling" OFF)
 # if(PROFILING)
