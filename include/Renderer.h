@@ -38,6 +38,10 @@ public:
     /// @param fragmentPath Путь к фрагментному шейдеру
     void setShader(const char* vertexPath, const char* fragmentPath);
 
+    /// @brief Получение шейдера
+    /// @return Указатель на шейдер
+    Shader* getShader() { return shader; }
+
     /// @brief Получение ширины окна
     /// @return Ширина окна
     int getWidth() { return width; }
