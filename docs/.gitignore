@@ -7,4 +7,4 @@
 *.out
 *.lop
 *.lpc
-*.synctex.gz
+*.synctex*

@@ -7,7 +7,7 @@
 
 \subsection{Цель и назначение разработки}
 
-Основной целью преддипломной практики является разработка программной системы (графического движка) для визуализации трёхмерных данных в реальном времени для ООО <<Предприятие ВТИ-Сервис>>.
+Основной целью преддипломной практики является разработка программной системы (графического движка) для визуализации трёхмерных данных в реальном времени.
 
 Посредством разработки данного движка планируется решить ряд технических задач, стоящих перед компанией. Цели разработки можно разделить на две основные группы: технические и практические.
 
@@ -98,7 +98,7 @@ REngine::Scene scene;
 
 // Настройка камеры
 scene.camera.position = glm::vec3(0.0f, 0.0f, 3.0f);
-scene.camera.rotation = glm::vec3(0.0f, 0.0f, 0.0f);
+scene.camera.setRotation(0.0f, 0.0f, 0.0f);
 scene.camera.fov = 45.0f;
 
 // Настройка освещения
@@ -123,7 +123,7 @@ scene.pointLights = {
 
 // Добавление объекта в сцену
 REngine::SceneNode node;
-node.mesh = new REngine::CubeMesh();
+node.mesh = new REngine::Mesh(REngine::Mesh::createCube());
 node.position = glm::vec3(0.0f, 0.0f, 0.0f);
 node.rotation = glm::vec3(0.0f, 0.0f, 0.0f);
 node.scale = glm::vec3(1.0f);
@@ -131,10 +131,11 @@ node.shininess = 32.0f;
 node.distort = false;
 node.texturePath = "textures/box.png";
 node.specularPath = "textures/box_specular.png";
+node.mesh->computeAABB();
 scene.nodes.push_back(node);
 
 // Установка сцены в движок
-REngine::renderer->setScene(&scene);
+REngine::setScene(&scene);
 \end{lstlisting}
 
 \paragraph{Обработка ввода}
@@ -151,19 +152,18 @@ REngine::InputHandler::setKeyDownCallback(SDLK_F1, [&wireframeMode]() {
 });
 
 // Обработка движения мыши
-REngine::InputHandler::setMouseMotionCallback([&scene](int x, int y, int xrel, int yrel) {
+REngine::InputHandler::setMouseMotionCallback([this](int x, int y, int xrel, int yrel) {
     // Вращение камеры при движении мыши
-    auto& camera = scene.camera;
-    camera.rotation.y += xrel * 0.1f;
-    camera.rotation.x += yrel * 0.1f;
+    auto& camera = getScene()->camera;
+    camera.rotateRelative(yrel * 0.1f, xrel * 0.1f, 0.0f);
 });
 
 // Обработка прокрутки колесика мыши
-REngine::InputHandler::setMouseWheelCallback([&scene](int x, int y) {
+REngine::InputHandler::setMouseWheelCallback([this](int x, int y) {
     // Изменение поля зрения камеры
-    float newFov = scene.camera.fov - y * 2.0f;
+    float newFov = getScene()->camera.fov - y * 2.0f;
     if (newFov > 1.0f && newFov < 179.0f) {
-        scene.camera.fov = newFov;
+        getScene()->camera.fov = newFov;
     }
 });
 \end{lstlisting}
@@ -173,14 +173,14 @@ REngine::InputHandler::setMouseWheelCallback([&scene](int x, int y) {
 С помощью пользовательской обработки ввода можно изменять элементы сцены, такие как параметры камеры, положение объектов, цвета источников света и любые другие параметры.
 
 \begin{lstlisting}[language=C++, caption=Пример изменения параметров сцены]
-REngine::InputHandler::setKeyHoldCallback(SDLK_UP, [&scene](float deltaTime) {
+REngine::InputHandler::setKeyHoldCallback(SDLK_UP, [this](float deltaTime) {
     // Изменение положения объекта
-    scene.nodes[0].position += glm::vec3(0.0f, 0.1f * deltaTime, 0.0f);
+    getScene()->nodes[0].position += glm::vec3(0.0f, 0.1f * deltaTime, 0.0f);
 });
 
-REngine::InputHandler::setKeyDownCallback(SDLK_r, [&scene]() {
+REngine::InputHandler::setKeyDownCallback(SDLK_r, [this]() {
     // Изменение цвета освещения
-    scene.dirLight.diffuse = glm::vec3(1.0f, 0.0f, 0.0f);
+    getScene()->dirLight.diffuse = glm::vec3(1.0f, 0.0f, 0.0f);
 });
 \end{lstlisting}
 
@@ -190,17 +190,17 @@ REngine::InputHandler::setKeyDownCallback(SDLK_r, [&scene]() {
 
 \begin{lstlisting}[language=C++, caption=Пример настройки шейдеров]
 // Установка шейдеров из файлов
-REngine::renderer->setShader(
+REngine::setShader(
     "shaders/vertex.glsl",
     "shaders/fragment.glsl"
 );
 
 // Получение указателя на шейдер
-Shader* shader = REngine::renderer->getShader();
+REngine::Shader* shader = REngine::getShader();
 
 // Установка uniform-переменных
 shader->use();
-shader->setVec3("viewPos", camera.position);
+shader->setVec3("viewPos", getScene()->camera.position);
 shader->setFloat("time", SDL_GetTicks() / 1000.0f);
 \end{lstlisting}
 
@@ -211,9 +211,10 @@ shader->setFloat("time", SDL_GetTicks() / 1000.0f);
 \begin{lstlisting}[language=C++, caption=Пример загрузки текстур]
 // Добавление объекта с текстурой
 REngine::SceneNode texturedNode;
-texturedNode.mesh = new REngine::CubeMesh();
+texturedNode.mesh = new REngine::Mesh(REngine::Mesh::createCube());
 texturedNode.texturePath = "textures/wood.png";
 texturedNode.specularPath = "textures/wood_specular.png"; // Необязательно
+texturedNode.mesh->computeAABB();
 scene.nodes.push_back(texturedNode);
 \end{lstlisting}
 
