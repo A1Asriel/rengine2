@@ -77,7 +77,7 @@
     \continuecaption{Продолжение таблицы \ref{tab:windowfuncs_spec}}
     \centrow Функция & \centrow Возвращаемый тип & \centrow Описание \\ \hline 
     \finishhead
-    createWindow(const char* title, int width = 0, int height = 0) & int & Инициализирует SDL, создает окно приложения и контекст OpenGL. \texttt{title} - заголовок окна. \texttt{width} и \texttt{height} - размеры окна; если 0, используется полноэкранный режим. Возвращает 0 при успехе или код ошибки из \texttt{WindowError} при неудаче. \\ \hline
+    createWindow(const char* title, int width = 0, int height = 0) & int & Инициализирует SDL, создает окно приложения и контекст OpenGL. \texttt{title} -- заголовок окна. \texttt{width} и \texttt{height} -- размеры окна; если 0, используется полноэкранный режим. Возвращает 0 при успехе или код ошибки из \texttt{WindowError} при неудаче. \\ \hline
     mainLoop() & void & Запускает главный цикл приложения. В цикле обрабатываются события ввода, обновляется состояние сцены и происходит отрисовка. Цикл продолжается до тех пор, пока не будет получен сигнал о закрытии окна. \\ \hline
     setScene(REngine::Scene* scene) & void & Устанавливает текущую сцену для рендеринга. \\ \hline
     getScene() & REngine::Scene* & Возвращает указатель на текущую сцену. \\ \hline
@@ -101,7 +101,7 @@
     position & glm::vec3 & Позиция объекта в мировых координатах. Значение по умолчанию: (0,0,0). \\ \hline
     rotation & glm::vec3 & Углы поворота объекта вокруг осей X, Y, Z в градусах. Значение по умолчанию: (0,0,0). \\ \hline
     scale & glm::vec3 & Масштаб объекта по осям X, Y, Z. Значение по умолчанию: (1,1,1). \\ \hline
-    shininess & float & Коэффициент блеска материала объекта. Используется в модели освещения Фонга. Значение по умолчанию: 32.0. \\ \hline
+    shininess & float & Коэффициент блеска материала объекта. Используется в модели освещения Блинна-Фонга. Значение по умолчанию: 32.0. \\ \hline
     distort & bool & Флаг, указывающий, нужно ли применять эффект искажения к текстуре объекта. Значение по умолчанию: false. \\ \hline
     texturePath & std::string & Путь к файлу основной текстуры объекта (diffuse map). \\ \hline
     specularPath & std::string & Путь к файлу текстуры для карты отражений (specular map). \\ \hline
@@ -221,7 +221,7 @@
     texture & Texture* & Указатель на основную текстуру объекта (diffuse). \\ \hline
     specularTexture & Texture* & Указатель на текстуру отражений (specular map). \\ \hline
     \multicolumn{3}{|l|}{Приватные поля} \\ \hline
-    vertices & std::vector<float> & Вектор вершин меша. \\ \hline
+    vertices & std::vector<float> & Вектор вершин геометрии. \\ \hline
     VAO & unsigned int & Идентификатор Vertex Array Object. \\ \hline
     VBO & unsigned int & Идентификатор Vertex Buffer Object. \\ \hline
     EBO & unsigned int & Идентификатор Element Buffer Object. \\ \hline
@@ -229,15 +229,15 @@
     min & glm::vec3 & Минимальные координаты AABB (bounding box). \\ \hline
     max & glm::vec3 & Максимальные координаты AABB. \\ \hline
     \multicolumn{3}{|l|}{Методы} \\ \hline
-    Mesh(std::vector<float> vertices, std::vector<unsigned> indices) & конструктор & Конструктор. Инициализирует меш с заданными вершинами и индексами. \\ \hline
+    Mesh(std::vector<float> vertices, std::vector<unsigned> indices) & конструктор & Конструктор. Инициализирует геометрию с заданными вершинами и индексами. \\ \hline
     \textasciitilde Mesh() & деструктор & Деструктор. Освобождает ресурсы OpenGL. \\ \hline
-    draw(const Shader \& shader) & void & Отрисовывает меш с использованием указанного шейдера. \\ \hline
-    computeAABB() & void & Вычисляет Axis-Aligned Bounding Box (AABB) для меша на основе его вершин. \\ \hline
+    draw(const Shader \& shader) & void & Отрисовывает геометрию с использованием указанного шейдера. \\ \hline
+    computeAABB() & void & Вычисляет обрамляющий параллелепипед (Axis-Aligned Bounding Box, AABB) для геометрии на основе её вершин. \\ \hline
     getMin() & const glm::vec3\& & Возвращает минимальные координаты AABB. \\ \hline
     getMax() & const glm::vec3\& & Возвращает максимальные координаты AABB. \\ \hline
     \multicolumn{3}{|l|}{Статические методы} \\ \hline
-    createCube() & static Mesh & Создает и возвращает меш стандартного куба. \\ \hline
-    createSphere(int vslices = 100, int hslices = 100) & static Mesh & Создает и возвращает меш сферы с указанным числом вертикальных (vslices) и горизонтальных (hslices) сегментов. \\ \hline
+    createCube() & static Mesh & Создает и возвращает геометрию стандартного куба. \\ \hline
+    createSphere(int vslices = 100, int hslices = 100) & static Mesh & Создает и возвращает геометрию сферы с указанным числом вертикальных (vslices) и горизонтальных (hslices) сегментов. \\ \hline
 \end{xltabular}
 
 \subsubsection{Класс Shader}
@@ -255,16 +255,16 @@
     \multicolumn{3}{|l|}{Публичные поля} \\ \hline
     ID & unsigned int & Идентификатор скомпилированной и связанной шейдерной программы OpenGL. \\ \hline
     \multicolumn{3}{|l|}{Публичные методы} \\ \hline
-    Shader(const char* vertexPath = NULL, const char* fragmentPath = NULL) & конструктор & Конструктор класса. Загружает, компилирует и связывает вершинный и фрагментный шейдеры. \texttt{vertexPath} - путь к файлу вершинного шейдера, \texttt{fragmentPath} - путь к файлу фрагментного шейдера. Если пути не указаны (NULL), используются встроенные шейдеры по умолчанию. \\ \hline
+    Shader(const char* vertexPath = NULL, const char* fragmentPath = NULL) & конструктор & Конструктор класса. Загружает, компилирует и связывает вершинный и фрагментный шейдеры. \texttt{vertexPath} -- путь к файлу вершинного шейдера, \texttt{fragmentPath} -- путь к файлу фрагментного шейдера. Если пути не указаны (NULL), используются встроенные шейдеры по умолчанию. \\ \hline
     use() & void & Активирует данную шейдерную программу для использования в текущем контексте рендеринга OpenGL. \\ \hline
-    setBool(const std::string \&name, bool value) const & void & Устанавливает значение uniform-переменной типа boolean в шейдере. \texttt{name} - имя переменной, \texttt{value} - значение. \\ \hline
-    setInt(const std::string \&name, int value) const & void & Устанавливает значение uniform-переменной типа int в шейдере. \texttt{name} - имя переменной, \texttt{value} - значение. \\ \hline
-    setFloat(const std::string \&name, float value) const & void & Устанавливает значение uniform-переменной типа float в шейдере. \texttt{name} - имя переменной, \texttt{value} - значение. \\ \hline
-    setMat4(const std::string \&name, const glm::mat4 \&mat) const & void & Устанавливает значение uniform-переменной типа mat4 (матрица 4x4) в шейдере. \texttt{name} - имя переменной, \texttt{mat} - матрица. \\ \hline
-    setVec3(const std::string \&name, const glm::vec3 \&value) const & void & Устанавливает значение uniform-переменной типа vec3 (вектор из 3-х компонентов) в шейдере. \texttt{name} - имя переменной, \texttt{value} - вектор. \\ \hline
+    setBool(const std::string \&name, bool value) const & void & Устанавливает значение uniform-переменной типа boolean в шейдере. \texttt{name} -- имя переменной, \texttt{value} -- значение. \\ \hline
+    setInt(const std::string \&name, int value) const & void & Устанавливает значение uniform-переменной типа int в шейдере. \texttt{name} -- имя переменной, \texttt{value} -- значение. \\ \hline
+    setFloat(const std::string \&name, float value) const & void & Устанавливает значение uniform-переменной типа float в шейдере. \texttt{name} -- имя переменной, \texttt{value} -- значение. \\ \hline
+    setMat4(const std::string \&name, const glm::mat4 \&mat) const & void & Устанавливает значение uniform-переменной типа mat4 (матрица 4x4) в шейдере. \texttt{name} -- имя переменной, \texttt{mat} -- матрица. \\ \hline
+    setVec3(const std::string \&name, const glm::vec3 \&value) const & void & Устанавливает значение uniform-переменной типа vec3 (вектор из 3-х компонентов) в шейдере. \texttt{name} -- имя переменной, \texttt{value} -- вектор. \\ \hline
     isValid() const & bool & Проверяет, была ли шейдерная программа успешно скомпилирована и связана. Возвращает \texttt{true}, если \texttt{ID != 0}, иначе \texttt{false}. \\ \hline
     \multicolumn{3}{|l|}{Приватные методы} \\ \hline
-    checkCompileErrors(unsigned int shader, std::string type) & void & Вспомогательный метод для проверки ошибок компиляции или связывания шейдеров. \texttt{shader} - идентификатор объекта шейдера или программы, \texttt{type} - строка, указывающая тип проверяемого объекта ("VERTEX", "FRAGMENT" или "PROGRAM"). \\ \hline
+    checkCompileErrors(unsigned int shader, std::string type) & void & Вспомогательный метод для проверки ошибок компиляции или связывания шейдеров. \texttt{shader} -- идентификатор объекта шейдера или программы, \texttt{type} -- строка, указывающая тип проверяемого объекта ("VERTEX", "FRAGMENT" или "PROGRAM"). \\ \hline
 \end{xltabular}
 
 \subsubsection{Класс Texture}
@@ -291,7 +291,7 @@
     Texture(const std::string\& path) & конструктор & Конструктор, загружающий текстуру из указанного файла BMP с помощью метода \texttt{loadBMP}. \\ \hline
     \textasciitilde Texture() & деструктор & Деструктор класса. Освобождает ресурсы, связанные с текстурным объектом OpenGL, вызывая \texttt{clear()}. \\ \hline
     loadBMP(const std::string\& path) & bool & Загружает текстуру из файла формата BMP. Читает заголовки BMP, извлекает данные пикселей и вызывает \texttt{loadToGL} для загрузки в OpenGL. Возвращает \texttt{true} при успешной загрузке, иначе \texttt{false}. \\ \hline
-    genFromColor(float r, float g, float b) & bool & Генерирует простую одноцветную текстуру размером 1x1 пиксель. \texttt{r, g, b} - компоненты цвета в диапазоне [0.0, 1.0]. Вызывает \texttt{loadToGL}. Возвращает \texttt{true} при успехе. \\ \hline
+    genFromColor(float r, float g, float b) & bool & Генерирует простую одноцветную текстуру размером 1x1 пиксель. \texttt{r, g, b} -- компоненты цвета в диапазоне [0.0, 1.0]. Вызывает \texttt{loadToGL}. Возвращает \texttt{true} при успехе. \\ \hline
     bind() const & void & Привязывает текстуру (делает ее активной на текстурном юните 0) для использования в последующих операциях рендеринга. \\ \hline
     isValid() const & bool & Проверяет, была ли текстура успешно загружена и инициализирована (\texttt{textureID != 0}). \\ \hline
     getWidth() const & int & Возвращает ширину текстуры в пикселях. \\ \hline
@@ -318,7 +318,7 @@
 
     \multicolumn{3}{|l|}{Типы данных (using)} \\ \hline
     KeyCallback & std::function<void()> & Тип для callback-функции при нажатии/отпускании клавиши. \\ \hline
-    HoldKeyCallback & std::function<void(float)> & Тип для callback-функции при удержании клавиши (аргумент - deltaTime). \\ \hline
+    HoldKeyCallback & std::function<void(float)> & Тип для callback-функции при удержании клавиши (аргумент -- deltaTime). \\ \hline
     MouseMotionCallback & std::function<void(int, int, int, int)> & Тип для callback-функции при движении мыши (x, y, xrel, yrel). \\ \hline
     MouseButtonCallback & std::function<void(int, int, int)> & Тип для callback-функции при нажатии/отпускании кнопки мыши (x, y, button). \\ \hline
     MouseWheelCallback & std::function<void(int, int)> & Тип для callback-функции при прокрутке колесика мыши (x, y смещения). \\ \hline
@@ -336,7 +336,7 @@
     \multicolumn{3}{|l|}{Статические методы} \\ \hline
     init() & static void & Инициализирует обработчик ввода. \\ \hline
     handleEvent(const SDL\_Event\& event) & static bool & Обрабатывает входящее событие SDL. Возвращает true, если событие было обработано. \\ \hline
-    update(float deltaTime) & static void & Обновляет состояние ввода, вызывает callback-функции для удерживаемых клавиш. deltaTime - время с прошлого кадра. \\ \hline
+    update(float deltaTime) & static void & Обновляет состояние ввода, вызывает callback-функции для удерживаемых клавиш. deltaTime -- время с прошлого кадра. \\ \hline
     setKeyDownCallback (SDL\_Keycode key, KeyCallback callback) & static void & Устанавливает callback-функцию для события нажатия указанной клавиши. \\ \hline
     setKeyUpCallback (SDL\_Keycode key, KeyCallback callback) & static void & Устанавливает callback-функцию для события отпускания указанной клавиши. \\ \hline
     setKeyHoldCallback (SDL\_Keycode key, HoldKeyCallback callback) & static void & Устанавливает callback-функцию для события удержания указанной клавиши. \\ \hline
@@ -632,10 +632,10 @@ TEST(Engine, WindowCreation) {
 \label{scene:image}
 \end{figure}
 
-На рисунке \ref{culling:image} представлена сцена, тестирующая функционал отсечения невидимых поверхностей.
+На рисунке \ref{culling:image} представлена сцена, тестирующая оптимизацию отрисовки путём отсечения объектов за кадром.
 
 \begin{figure}[ht]
 \center{\includegraphics[width=1\linewidth]{culling.png}}
-\caption{Сцена, тестирующая функционал отсечения невидимых поверхностей}
+\caption{Сцена, тестирующая функционал отсечения невидимых объектов}
 \label{culling:image}
 \end{figure}
