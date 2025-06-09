@@ -634,8 +634,46 @@ TEST(Engine, WindowCreation) {
 
 На рисунке \ref{culling:image} представлена сцена, тестирующая оптимизацию отрисовки путём отсечения объектов за кадром.
 
-\begin{figure}[ht]
+\begin{figure}[H]
 \center{\includegraphics[width=1\linewidth]{culling.png}}
 \caption{Сцена, тестирующая функционал отсечения невидимых объектов}
 \label{culling:image}
 \end{figure}
+
+На рисунке \ref{blinnPhong:image} представлена работа множественного освещения с использованием разных цветов по модели Блинна-Фонга.
+
+\begin{figure}[H]
+\center{\includegraphics[width=1\linewidth]{blinn-phong.png}}
+\caption{Освещение по модели Блинна-Фонга}
+\label{blinnPhong:image}
+\end{figure}
+
+На рисунке \ref{input:image} представлена работа пользовательского ввода, разделённая на до и после нажатия клавиши, определённой пользователем. Код конечного приложения, использующего движок (рис. \ref{input:code}), определяет функцию, выполняющуюся при нажатии клавиши F1. В данной конфигурации при нажатии этой клавиши включается режим отображения только границ объектов.
+
+\begin{figure}[H]
+\center{\includegraphics[width=0.75\linewidth]{input.png}}
+\caption{До и после нажатия клавиши, режим отображения границ объектов}
+\label{input:image}
+\end{figure}
+
+\begin{figure}[H]
+\begin{lstlisting}[language=C++]
+// Переключение режима отображения вайрфрейма по F1
+bool wireframeMode = false;
+REngine::InputHandler::setKeyDownCallback(SDLK_F1, [&wireframeMode]() {
+    wireframeMode = !wireframeMode;
+    if (wireframeMode) {
+        glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
+        INFO("Wireframe mode: ON");
+    } else {
+        glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
+        INFO("Wireframe mode: OFF");
+    }
+});
+\end{lstlisting}
+\caption{Код конечного приложения}
+\label{input:code}
+\end{figure}
+
+
+
